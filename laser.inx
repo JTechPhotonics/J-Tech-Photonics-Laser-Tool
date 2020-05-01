@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
+    <_name>J Tech Photonics Laser Tool</_name>
+    <id>jtechphotonics.com</id>
+	<dependency type="executable" location="extensions">laser.py</dependency>
+	<dependency type="executable" location="extensions">inkex.py</dependency>
+
+	<param name="laser-command" type="string" _gui-text="Laser ON Command:">M03</param>
+	<param name="laser-off-command" type="string" _gui-text="Laser OFF Command:">M05</param>
+	<param name="travel-speed" type="int" min="0" max="15000" _gui-text="Travel Speed (mm/min or in/min):">3000</param>
+	<param name="laser-speed" type="int" min="0" max="15000" _gui-text="Laser Speed (mm/min or in/min):">750</param>
+	<param name="laser-power" type="int" min="0" max="20000" _gui-text="Laser Power S# (0-255 or 0-12000):">255</param>
+	<param name="power-delay" type="float" min="0" max="1000" _gui-text="Power-On Delay (ms or s):">0</param>	
+	<param name="passes" type="int" min="1" max="100" _gui-text="Passes:">1</param>
+	<param name="pass-depth" type="float" min="0" max="10" _gui-text="Pass Depth (mm or in):">1</param>
+	<param name="directory" type="string" _gui-text="Directory:"></param>
+	<param name="filename" type="string" _gui-text="Filename:">output.gcode</param>
+	<param name="add-numeric-suffix-to-filename" type="boolean" _gui-text="Add numeric suffix to filename">true</param>
+
+  <param name="unit" type="enum" _gui-text="All Units (mm or in):">
+    <item value="G21 (All units in mm)">mm</item>
+    <item value="G20 (All units in inches)">in</item>
+  </param>
+
+	<effect>
+		<effects-menu>
+			<submenu _name="Generate Laser Gcode"/>
+		</effects-menu>
+		<object-type>path</object-type>
+  	</effect>
+
+	<script>
+		<command reldir="extensions" interpreter="python">laser.py</command>
+	</script>
+
+</inkscape-extension>
