@@ -25,25 +25,23 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
-import inkex, simplestyle, simplepath
-import cubicsuperpath, simpletransform, bezmisc
+import inkex
+import simplestyle
+import cubicsuperpath
+import simpletransform
 
 import os
 import math
 import bezmisc
 import re
-import copy
 import sys
 import time
-import cmath
 import numpy
-import codecs
-import random
 import gettext
 
 _ = gettext.gettext
 
-### Check if inkex has errormsg (0.46 version doesnot have one.) Could be removed later.
+# Check if inkex has error messages. (0.46 version does not have one) Could be removed later.
 if "errormsg" not in dir(inkex):
     inkex.errormsg = lambda msg: sys.stderr.write((unicode(msg) + "\n").encode("UTF-8"))
 
@@ -60,7 +58,7 @@ def bezierslopeatt(((bx0, by0), (bx1, by1), (bx2, by2), (bx3, by3)), t):
             dy = 6 * ay
             if dx == dy == 0:
                 print_("Slope error x = %s*t^3+%s*t^2+%s*t+%s, y = %s*t^3+%s*t^2+%s*t+%s,  t = %s, dx==dy==0" % (
-                ax, bx, cx, dx, ay, by, cy, dy, t))
+                    ax, bx, cx, dx, ay, by, cy, dy, t))
                 print_(((bx0, by0), (bx1, by1), (bx2, by2), (bx3, by3)))
                 dx, dy = 1, 1
 
@@ -69,13 +67,10 @@ def bezierslopeatt(((bx0, by0), (bx1, by1), (bx2, by2), (bx3, by3)), t):
 
 bezmisc.bezierslopeatt = bezierslopeatt
 
-
-
-
 ################################################################################
-###
-###        Styles and additional parameters
-###
+#
+#        Styles and additional parameters
+#
 ################################################################################
 
 math.pi2 = math.pi * 2
@@ -189,25 +184,11 @@ styles = {
 
 
 ################################################################################
-###        Cubic Super Path additional functions
+#        Cubic Super Path additional functions
 ################################################################################
-
-
 
 def csp_segment_to_bez(sp1, sp2):
     return sp1[1:] + sp2[:2]
-
-
-
-
-
-
-
-
-
-
-#    draw_pointer( list(csp_at_t(csp1[dist[1]][dist[2]-1],csp1[dist[1]][dist[2]],dist[3]))
-#                + list(csp_at_t(csp2[dist[4]][dist[5]-1],csp2[dist[4]][dist[5]],dist[6])), "#507","line")
 
 
 def csp_split(sp1, sp2, t=.5):
@@ -225,23 +206,6 @@ def csp_split(sp1, sp2, t=.5):
     x = x1223 + (x2334 - x1223) * t
     y = y1223 + (y2334 - y1223) * t
     return [sp1[0], sp1[1], [x12, y12]], [[x1223, y1223], [x, y], [x2334, y2334]], [[x34, y34], sp2[1], sp2[2]]
-
-
-
-
-############################################################################
-### csp_segments_intersection(sp1,sp2,sp3,sp4)
-###
-### Returns array containig all intersections between two segmets of cubic
-### super path. Results are [ta,tb], or [ta0, ta1, tb0, tb1, "Overlap"]
-### where ta, tb are values of t for the intersection point.
-############################################################################
-
-
-
-
-
-
 
 
 def csp_curvature_at_t(sp1, sp2, t, depth=3):
@@ -273,12 +237,6 @@ def csp_curvature_at_t(sp1, sp2, t, depth=3):
         return 1e100
 
 
-
-
-
-
-
-
 def csp_at_t(sp1, sp2, t):
     ax, bx, cx, dx = sp1[1][0], sp1[2][0], sp2[0][0], sp2[1][0]
     ay, by, cy, dy = sp1[1][1], sp1[2][1], sp2[0][1], sp2[1][1]
@@ -294,27 +252,13 @@ def csp_at_t(sp1, sp2, t):
     return [x, y]
 
 
-
-
 def cspseglength(sp1, sp2, tolerance=0.001):
     bez = (sp1[1][:], sp1[2][:], sp2[0][:], sp2[1][:])
     return bezmisc.bezierlength(bez, tolerance)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+#        Distance calculation from point to arc
 def point_to_arc_distance(p, arc):
-    ###        Distance calculattion from point to arc
     P0, P2, c, a = arc
     dist = None
     p = P(p)
@@ -352,101 +296,9 @@ def csp_to_arc_distance(sp1, sp2, arc1, arc2, tolerance=0.01):  # arc = [start,e
     return d1[0]
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ################################################################################
-###        Bezier additional functions
+#    Common functions
 ################################################################################
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-################################################################################
-###    Some vector functions
-################################################################################
-
-
-
-
-
-
-
-
-
-
-
-
-
-################################################################################
-###    Common functions
-################################################################################
-
-
-
-
-
-
-
-
-
-
-
-
 
 def atan2(*arg):
     if len(arg) == 1 and (type(arg[0]) == type([0., 0.]) or type(arg[0]) == type((0., 0.))):
@@ -458,26 +310,11 @@ def atan2(*arg):
         raise ValueError, "Bad argumets for atan! (%s)" % arg
 
 
-
-
-
-
-
-
-
-
-
-
 def between(c, x, y):
     return x - straight_tolerance <= c <= y + straight_tolerance or y - straight_tolerance <= c <= x + straight_tolerance
 
 
-
-
-################################################################################
-###        print_ prints any arguments into specified log file
-################################################################################
-
+# Print arguments into specified log file
 def print_(*arg):
     f = open(options.log_filename, "a")
     for s in arg:
@@ -488,8 +325,9 @@ def print_(*arg):
 
 
 ################################################################################
-###        Point (x,y) operations
+#        Point (x,y) operations
 ################################################################################
+
 class P:
     def __init__(self, x, y=None):
         if not y == None:
@@ -526,39 +364,23 @@ class P:
         else:
             return P(0, 0)
 
-
-
     def angle(self):
         return math.atan2(self.y, self.x)
 
     def __repr__(self):
         return '%f,%f' % (self.x, self.y)
 
-
-
-
     def l2(self):
         return self.x * self.x + self.y * self.y
 
 
 ################################################################################
-###
-### Offset function
-###
-### This function offsets given cubic super path.
-### It's based on src/livarot/PathOutline.cpp from Inkscape's source code.
-###
-###
-################################################################################
-
-
-################################################################################
-###
-###        Biarc function
-###
-###        Calculates biarc approximation of cubic super path segment
-###        splits segment if needed or approximates it with straight line
-###
+#
+#        Biarc function
+#
+#        Calculates biarc approximation of cubic super path segment
+#        splits segment if needed or approximates it with straight line
+#
 ################################################################################
 def biarc(sp1, sp2, z1, z2, depth=0):
     def biarc_split(sp1, sp2, z1, z2, depth):
@@ -589,7 +411,7 @@ def biarc(sp1, sp2, z1, z2, depth=0):
         r = TS.mag() / TE.mag()
     TS, TE = TS.unit(), TE.unit()
     tang_are_parallel = (
-                (tsa - tea) % math.pi < straight_tolerance or math.pi - (tsa - tea) % math.pi < straight_tolerance)
+            (tsa - tea) % math.pi < straight_tolerance or math.pi - (tsa - tea) % math.pi < straight_tolerance)
     if (tang_are_parallel and
             ((
                      v.mag() < straight_distance_tolerance or TE.mag() < straight_distance_tolerance or TS.mag() < straight_distance_tolerance) or
@@ -630,7 +452,7 @@ def biarc(sp1, sp2, z1, z2, depth=0):
         if (D - P1).mag() == 0: return None, None
         R = D - ((D - P0).mag() ** 2 / (D - P1).mag()) * (P1 - D).unit()
         p0a, p1a, p2a = (P0 - R).angle() % (2 * math.pi), (P1 - R).angle() % (2 * math.pi), (P2 - R).angle() % (
-                    2 * math.pi)
+                2 * math.pi)
         alpha = (p2a - p0a) % (2 * math.pi)
         if (p0a < p2a and (p1a < p0a or p2a < p1a)) or (p2a < p1a < p0a):
             alpha = -2 * math.pi + alpha
@@ -656,33 +478,12 @@ def biarc(sp1, sp2, z1, z2, depth=0):
                 [[P2.x, P2.y], 'arc', [R2.x, R2.y], a2, [P4.x, P4.y], [zm, z2]]]
 
 
-
-
 ################################################################################
-###        Polygon class
+#        Polygon class
 ################################################################################
 class Polygon:
     def __init__(self, polygon=None):
         self.polygon = [] if polygon == None else polygon[:]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     def add(self, add):
         if type(add) == type([]):
@@ -691,11 +492,7 @@ class Polygon:
             self.polygon += add.polygon[:]
 
 
-
-
-
-
-class Arangement_Genetic:
+class ArrangementGenetic:
     # gene = [fittness, order, rotation, xposition]
     # spieces = [gene]*shapes count
     # population = [spieces]
@@ -709,26 +506,13 @@ class Arangement_Genetic:
         self.move_mutate_factor = 1.
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 ################################################################################
 ###
 ###        Gcodetools class
 ###
 ################################################################################
 
-class laser_gcode(inkex.Effect):
+class LaserGcode(inkex.Effect):
 
     def export_gcode(self, gcode):
         gcode_pass = gcode
@@ -736,51 +520,71 @@ class laser_gcode(inkex.Effect):
             gcode += "G91\nG1 Z-" + self.options.pass_depth + "\nG90\n" + gcode_pass
         f = open(self.options.directory + self.options.file, "w")
         f.write(
-            self.options.laser_off_command + " S0" + "\n" + self.header + "G1 F" + self.options.travel_speed + "\n" + gcode + self.footer)
+            self.options.laser_off_command + " S0" + "\n" + self.header +
+            "G1 F" + self.options.travel_speed + "\n" + gcode + self.footer)
         f.close()
 
     def __init__(self):
         inkex.Effect.__init__(self)
-        self.OptionParser.add_option("-d", "--directory", action="store", type="string", dest="directory", default="",
-                                     help="Output directory")
-        self.OptionParser.add_option("-f", "--filename", action="store", type="string", dest="file",
-                                     default="output.gcode", help="File name")
-        self.OptionParser.add_option("", "--add-numeric-suffix-to-filename", action="store", type="inkbool",
-                                     dest="add_numeric_suffix_to_filename", default=False,
-                                     help="Add numeric suffix to file name")
-        self.OptionParser.add_option("", "--laser-command", action="store", type="string", dest="laser_command",
-                                     default="M03", help="Laser gcode command")
-        self.OptionParser.add_option("", "--laser-off-command", action="store", type="string", dest="laser_off_command",
-                                     default="M05", help="Laser gcode end command")
-        self.OptionParser.add_option("", "--laser-speed", action="store", type="int", dest="laser_speed", default="750",
-                                     help="Laser speed (mm/min)")
-        self.OptionParser.add_option("", "--travel-speed", action="store", type="string", dest="travel_speed",
-                                     default="3000", help="Travel speed (mm/min)")
-        self.OptionParser.add_option("", "--laser-power", action="store", type="int", dest="laser_power", default="255",
-                                     help="S# is 256 or 10000 for full power")
-        self.OptionParser.add_option("", "--passes", action="store", type="int", dest="passes", default="1",
-                                     help="Quantity of passes")
-        self.OptionParser.add_option("", "--pass-depth", action="store", type="string", dest="pass_depth", default="1",
-                                     help="Depth of laser cut")
-        self.OptionParser.add_option("", "--power-delay", action="store", type="string", dest="power_delay",
-                                     default="0", help="Laser power-on delay (ms)")
-        self.OptionParser.add_option("", "--suppress-all-messages", action="store", type="inkbool",
-                                     dest="suppress_all_messages", default=True,
-                                     help="Hide messages during g-code generation")
-        self.OptionParser.add_option("", "--create-log", action="store", type="inkbool", dest="log_create_log",
-                                     default=False, help="Create log files")
-        self.OptionParser.add_option("", "--log-filename", action="store", type="string", dest="log_filename",
-                                     default='', help="Create log files")
-        self.OptionParser.add_option("", "--engraving-draw-calculation-paths", action="store", type="inkbool",
-                                     dest="engraving_draw_calculation_paths", default=False,
-                                     help="Draw additional graphics to debug engraving path")
-        self.OptionParser.add_option("", "--unit", action="store", type="string", dest="unit",
-                                     default="G21 (All units in mm)", help="Units either mm or inches")
-        self.OptionParser.add_option("", "--active-tab", action="store", type="string", dest="active_tab", default="",
-                                     help="Defines which tab is active")
-        self.OptionParser.add_option("", "--biarc-max-split-depth", action="store", type="int",
-                                     dest="biarc_max_split_depth", default="4",
-                                     help="Defines maximum depth of splitting while approximating using biarcs.")
+        add_option = self.OptionParser.add_option
+
+        add_option("-d", "--directory", action="store", type="string", dest="directory", default="",
+                   help="Output directory")
+
+        add_option("-f", "--filename", action="store", type="string", dest="file",
+                   default="output.gcode", help="File name")
+
+        add_option("", "--add-numeric-suffix-to-filename", action="store", type="inkbool",
+                   dest="add_numeric_suffix_to_filename", default=False,
+                   help="Add numeric suffix to file name")
+
+        add_option("", "--laser-command", action="store", type="string", dest="laser_command",
+                   default="M03", help="Laser gcode command")
+
+        add_option("", "--laser-off-command", action="store", type="string", dest="laser_off_command",
+                   default="M05", help="Laser gcode end command")
+
+        add_option("", "--laser-speed", action="store", type="int", dest="laser_speed", default="750",
+                   help="Laser speed (mm/min)")
+
+        add_option("", "--travel-speed", action="store", type="string", dest="travel_speed",
+                   default="3000", help="Travel speed (mm/min)")
+
+        add_option("", "--laser-power", action="store", type="int", dest="laser_power", default="255",
+                   help="S# is 256 or 10000 for full power")
+
+        add_option("", "--passes", action="store", type="int", dest="passes", default="1",
+                   help="Quantity of passes")
+
+        add_option("", "--pass-depth", action="store", type="string", dest="pass_depth", default="1",
+                   help="Depth of laser cut")
+
+        add_option("", "--power-delay", action="store", type="string", dest="power_delay",
+                   default="0", help="Laser power-on delay (ms)")
+
+        add_option("", "--suppress-all-messages", action="store", type="inkbool",
+                   dest="suppress_all_messages", default=True,
+                   help="Hide messages during g-code generation")
+
+        add_option("", "--create-log", action="store", type="inkbool", dest="log_create_log",
+                   default=False, help="Create log files")
+
+        add_option("", "--log-filename", action="store", type="string", dest="log_filename",
+                   default='', help="Create log files")
+
+        add_option("", "--engraving-draw-calculation-paths", action="store", type="inkbool",
+                   dest="engraving_draw_calculation_paths", default=False,
+                   help="Draw additional graphics to debug engraving path")
+
+        add_option("", "--unit", action="store", type="string", dest="unit",
+                   default="G21 (All units in mm)", help="Units either mm or inches")
+
+        add_option("", "--active-tab", action="store", type="string", dest="active_tab", default="",
+                   help="Defines which tab is active")
+
+        add_option("", "--biarc-max-split-depth", action="store", type="int",
+                   dest="biarc_max_split_depth", default="4",
+                   help="Defines maximum depth of splitting while approximating using biarcs.")
 
     def parse_curve(self, p, layer, w=None, f=None):
         c = []
@@ -788,7 +592,7 @@ class laser_gcode(inkex.Effect):
             return []
         p = self.transform_csp(p, layer)
 
-        ### Sort to reduce Rapid distance
+        # Sort to reduce Rapid distance
         k = range(1, len(p))
         keys = [0]
         while len(k) > 0:
@@ -812,11 +616,10 @@ class laser_gcode(inkex.Effect):
             print_("Curve: " + str(c))
         return c
 
-
     def draw_curve(self, curve, layer, group=None, style=styles["biarc_style"]):
 
         self.get_defs()
-        # Add marker to defs if it doesnot exists
+        # Add marker to defs if it does not exist
         if "DrawCurveMarker" not in self.defs:
             defs = inkex.etree.SubElement(self.document.getroot(), inkex.addNS("defs", "svg"))
             marker = inkex.etree.SubElement(defs, inkex.addNS("marker", "svg"),
@@ -843,7 +646,7 @@ class laser_gcode(inkex.Effect):
             del (style['biarc%s_r' % i]["marker-end"])
             style['biarc%s_r' % i] = simplestyle.formatStyle(style['biarc%s_r' % i])
 
-        if group == None:
+        if group is None:
             group = inkex.etree.SubElement(self.layers[min(1, len(self.layers) - 1)], inkex.addNS('g', 'svg'),
                                            {"gcodetools": "Preview group"})
         s, arcn = '', 0
@@ -965,13 +768,14 @@ class laser_gcode(inkex.Effect):
 
 
     ################################################################################
-    ###
-    ###        Generate Gcode
-    ###        Generates Gcode on given curve.
-    ###
-    ###        Crve defenitnion [start point, type = {'arc','line','move','end'}, arc center, arc angle, end point, [zstart, zend]]
-    ###
+    #
+    #       Generate Gcode
+    #
+    #       Curve definition
+    #       [start point, type = {'arc','line','move','end'}, arc center, arc angle, end point, [zstart, zend]]
+    #
     ################################################################################
+
     def generate_gcode(self, curve, layer, depth):
         tool = self.tools
         print_("Tool in g-code generator: " + str(tool))
@@ -1114,19 +918,18 @@ class laser_gcode(inkex.Effect):
                     else:
                         self.error(_(
                             "Orientation points are wrong! (if there are two orientation points they sould not be the same. If there are three orientation points they should not be in a straight line.)"),
-                                   "wrong_orientation_points")
+                            "wrong_orientation_points")
                 else:
                     self.error(_(
                         "Orientation points are wrong! (if there are two orientation points they sould not be the same. If there are three orientation points they should not be in a straight line.)"),
-                               "wrong_orientation_points")
+                        "wrong_orientation_points")
 
             self.transform_matrix_reverse[layer] = numpy.linalg.inv(self.transform_matrix[layer]).tolist()
             print_("\n Layer '%s' transformation matrixes:" % layer.get(inkex.addNS('label', 'inkscape')))
             print_(self.transform_matrix)
             print_(self.transform_matrix_reverse)
 
-            ###self.Zauto_scale[layer]  = math.sqrt( (self.transform_matrix[layer][0][0]**2 + self.transform_matrix[layer][1][1]**2)/2 )
-            ### Zautoscale is absolete
+            # Zautoscale is absolute
             self.Zauto_scale[layer] = 1
             print_("Z automatic scale = %s (computed according orientation points)" % self.Zauto_scale[layer])
 
@@ -1147,13 +950,12 @@ class laser_gcode(inkex.Effect):
                     csp[i][j][k] = self.transform(csp[i][j][k], layer, reverse)
         return csp
 
-
     ################################################################################
-    ###        Errors handling function, notes are just printed into Logfile,
-    ###        warnings are printed into log file and warning message is displayed but
-    ###        extension continues working, errors causes log and execution is halted
-    ###        Notes, warnings adn errors could be assigned to space or comma or dot
-    ###        sepparated strings (case is ignoreg).
+    #        Errors handling function, notes are just printed into Logfile,
+    #        warnings are printed into log file and warning message is displayed but
+    #        extension continues working, errors causes log and execution is halted
+    #        Notes, warnings adn errors could be assigned to space or comma or dot
+    #        sepparated strings (case is ignoreg).
     ################################################################################
     def error(self, s, type_="Warning"):
         notes = "Note "
@@ -1192,9 +994,8 @@ class laser_gcode(inkex.Effect):
             inkex.errormsg(s)
             sys.exit()
 
-
     ################################################################################
-    ###        Get defs from svg
+    #        Get defs from svg
     ################################################################################
     def get_defs(self):
         self.defs = {}
@@ -1211,9 +1012,9 @@ class laser_gcode(inkex.Effect):
 
 
     ################################################################################
-    ###
-    ###        Get Gcodetools info from the svg
-    ###
+    #
+    #        Get Gcodetools info from the svg
+    #
     ################################################################################
     def get_info(self):
         self.selected_paths = {}
@@ -1240,7 +1041,7 @@ class laser_gcode(inkex.Effect):
                         self.orientation_points[layer] = self.orientation_points[layer] + [
                             points[:]] if layer in self.orientation_points else [points[:]]
                         print_("Found orientation points in '%s' layer: %s" % (
-                        layer.get(inkex.addNS('label', 'inkscape')), points))
+                            layer.get(inkex.addNS('label', 'inkscape')), points))
                     else:
                         self.error(_(
                             "Warning! Found bad orientation points in '%s' layer. Resulting Gcode could be corrupt!") % layer.get(
@@ -1256,11 +1057,10 @@ class laser_gcode(inkex.Effect):
                 elif i.get("id") in self.selected:
                     self.error(_(
                         "This extension works with Paths and Dynamic Offsets and groups of them only! All other objects will be ignored!\nSolution 1: press Path->Object to path or Shift+Ctrl+C.\nSolution 2: Path->Dynamic offset or Ctrl+J.\nSolution 3: export all contours to PostScript level 2 (File->Save As->.ps) and File->Import this file."),
-                               "selection_contains_objects_that_are_not_paths")
+                        "selection_contains_objects_that_are_not_paths")
 
 
         recursive_search(self.document.getroot(), self.document.getroot())
-
 
     def get_orientation_points(self, g):
         items = g.getchildren()
@@ -1295,15 +1095,15 @@ class laser_gcode(inkex.Effect):
             return None
 
     ################################################################################
-    ###
-    ###        dxfpoints
-    ###
+    #
+    #        dxfpoints
+    #
     ################################################################################
     def dxfpoints(self):
         if self.selected_paths == {}:
             self.error(_(
                 "Noting is selected. Please select something to convert to drill point (dxfpoint) or clear point sign."),
-                       "warning")
+                "warning")
         for layer in self.layers:
             if layer in self.selected_paths:
                 for path in self.selected_paths[layer]:
@@ -1324,9 +1124,9 @@ class laser_gcode(inkex.Effect):
                         path.set("dxfpoint", "0")
 
     ################################################################################
-    ###
-    ###        Laser
-    ###
+    #
+    #        Laser
+    #
     ################################################################################
     def laser(self):
 
@@ -1435,7 +1235,7 @@ class laser_gcode(inkex.Effect):
                     if "d" not in path.keys():
                         self.error(_(
                             "Warning: One or more paths dont have 'd' parameter, try to Ungroup (Ctrl+Shift+G) and Object to Path (Ctrl+Shift+C)!"),
-                                   "selection_contains_objects_that_are_not_paths")
+                            "selection_contains_objects_that_are_not_paths")
                         continue
                     csp = cubicsuperpath.parsePath(path.get("d"))
                     csp = self.apply_transforms(path, csp)
@@ -1455,9 +1255,9 @@ class laser_gcode(inkex.Effect):
         self.export_gcode(gcode)
 
     ################################################################################
-    ###
-    ###        Orientation
-    ###
+    #
+    #        Orientation
+    #
     ################################################################################
     def orientation(self, layer=None):
         print_("entering orientations")
@@ -1509,7 +1309,7 @@ class laser_gcode(inkex.Effect):
                                    {
                                        'style': "stroke:none;fill:#000000;",
                                        'd': 'm %s,%s 2.9375,-6.343750000001 0.8125,1.90625 6.843748640396,-6.84374864039 0,0 0.6875,0.6875 -6.84375,6.84375 1.90625,0.812500000001 z z' % (
-                                       si[0], -si[1] + doc_height),
+                                           si[0], -si[1] + doc_height),
                                        'gcodetools': "Gcodetools orientation point arrow"
                                    })
             t = inkex.etree.SubElement(g, inkex.addNS('text', 'svg'),
@@ -1524,11 +1324,11 @@ class laser_gcode(inkex.Effect):
 
 
     ################################################################################
-    ###
-    ###        Effect
-    ###
-    ###        Main function of Gcodetools class
-    ###
+    #
+    #        Effect
+    #
+    #        Main function of Gcodetools class
+    #
     ################################################################################
     def effect(self):
         global options
@@ -1542,7 +1342,7 @@ class laser_gcode(inkex.Effect):
                 if os.path.isfile(self.options.log_filename): os.remove(self.options.log_filename)
                 f = open(self.options.log_filename, "a")
                 f.write("Gcodetools log file.\nStarted at %s.\n%s\n" % (
-                time.strftime("%d.%m.%Y %H:%M:%S"), options.log_filename))
+                    time.strftime("%d.%m.%Y %H:%M:%S"), options.log_filename))
                 f.write("%s tab is active.\n" % self.options.active_tab)
                 f.close()
             except:
@@ -1553,7 +1353,7 @@ class laser_gcode(inkex.Effect):
         if self.orientation_points == {}:
             self.error(_(
                 "Orientation points have not been defined! A default set of orientation points has been automatically added."),
-                       "warning")
+                "warning")
             self.orientation(self.layers[min(0, len(self.layers) - 1)])
             self.get_info()
 
@@ -1565,12 +1365,12 @@ class laser_gcode(inkex.Effect):
             "gcode before path": ("G4 P0 \n" + self.options.laser_command + " S" + str(
                 int(self.options.laser_power)) + "\nG4 P" + self.options.power_delay),
             "gcode after path": (
-                        "G4 P0 \n" + self.options.laser_off_command + " S0" + "\n" + "G1 F" + self.options.travel_speed),
+                    "G4 P0 \n" + self.options.laser_off_command + " S0" + "\n" + "G1 F" + self.options.travel_speed),
         }
 
         self.get_info()
         self.laser()
 
 
-e = laser_gcode()
+e = LaserGcode()
 e.affect()
