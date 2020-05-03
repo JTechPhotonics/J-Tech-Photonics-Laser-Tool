@@ -43,10 +43,11 @@ _ = gettext.gettext
 
 # Check if inkex has error messages. (0.46 version does not have one) Could be removed later.
 if "errormsg" not in dir(inkex):
-    inkex.errormsg = lambda msg: sys.stderr.write((unicode(msg) + "\n").encode("UTF-8"))
+    inkex.errormsg = lambda msg: sys.stderr.write((str(msg) + "\n").encode("UTF-8"))
 
 
-def bezierslopeatt(((bx0, by0), (bx1, by1), (bx2, by2), (bx3, by3)), t):
+def bezierslopeatt(xxx_todo_changeme, t):
+    ((bx0, by0), (bx1, by1), (bx2, by2), (bx3, by3)) = xxx_todo_changeme
     ax, ay, bx, by, cx, cy, x0, y0 = bezmisc.bezierparameterize(((bx0, by0), (bx1, by1), (bx2, by2), (bx3, by3)))
     dx = 3 * ax * (t ** 2) + 2 * bx * t + cx
     dy = 3 * ay * (t ** 2) + 2 * by * t + cy
@@ -63,7 +64,6 @@ def bezierslopeatt(((bx0, by0), (bx1, by1), (bx2, by2), (bx3, by3)), t):
                 dx, dy = 1, 1
 
     return dx, dy
-
 
 bezmisc.bezierslopeatt = bezierslopeatt
 
@@ -244,7 +244,6 @@ def csp_at_t(sp1, sp2, t):
     x1, y1 = ax + (bx - ax) * t, ay + (by - ay) * t
     x2, y2 = bx + (cx - bx) * t, by + (cy - by) * t
     x3, y3 = cx + (dx - cx) * t, cy + (dy - cy) * t
-
     x4, y4 = x1 + (x2 - x1) * t, y1 + (y2 - y1) * t
     x5, y5 = x2 + (x3 - x2) * t, y2 + (y3 - y2) * t
 
@@ -272,13 +271,13 @@ def point_to_arc_distance(p, arc):
             else:
                 alpha = math.pi2 + alpha
         if between(alpha, 0, a) or min(abs(alpha), abs(alpha - a)) < straight_tolerance:
-            return (p - i).mag(), [i.x, i.y]
+            return (p - i).mag(), (i.x, i.y)
         else:
             d1, d2 = (p - P0).mag(), (p - P2).mag()
             if d1 < d2:
-                return (d1, [P0.x, P0.y])
+                return (d1, (P0.x, P0.y))
             else:
-                return (d2, [P2.x, P2.y])
+                return (d2, (P2.x, P2.y))
 
 
 def csp_to_arc_distance(sp1, sp2, arc1, arc2, tolerance=0.01):  # arc = [start,end,center,alpha]
@@ -291,7 +290,10 @@ def csp_to_arc_distance(sp1, sp2, arc1, arc2, tolerance=0.01):  # arc = [start,e
             t = float(j) / n
             p = csp_at_t(sp1, sp2, t)
             d = min(point_to_arc_distance(p, arc1), point_to_arc_distance(p, arc2))
-            d1 = max(d1, d)
+            #inkex.debug("---Debug---")
+            #inkex.debug(str(d1) + str(d))
+            #inkex.debug(str(tuple(d1)) + str(tuple(d)))
+            d1 = max(tuple(d1), tuple(d))
         n = n * 2
     return d1[0]
 
@@ -307,7 +309,7 @@ def atan2(*arg):
 
         return (math.pi / 2 - math.atan2(arg[0], arg[1])) % math.pi2
     else:
-        raise ValueError, "Bad argumets for atan! (%s)" % arg
+        raise ValueError("Bad argumets for atan! (%s)" % arg)
 
 
 def between(c, x, y):
@@ -318,7 +320,7 @@ def between(c, x, y):
 def print_(*arg):
     f = open(options.log_filename, "a")
     for s in arg:
-        s = str(unicode(s).encode('unicode_escape')) + " "
+        s = str(str(s).encode('unicode_escape')) + " "
         f.write(s)
     f.write("\n")
     f.close()
@@ -353,6 +355,10 @@ class P:
 
     def __div__(self, other):
         return P(self.x / other, self.y / other)
+
+    # Added to support python 3
+    __floordiv__ = __div__
+    __truediv__ = __div__
 
     def mag(self):
         return math.hypot(self.x, self.y)
@@ -432,11 +438,11 @@ def biarc(sp1, sp2, z1, z2, depth=0):
         beta = -b / a
     elif not asmall:
         discr = b * b - 4 * a * c
-        if discr < 0:    raise ValueError, (a, b, c, discr)
+        if discr < 0:    raise ValueError(a, b, c, discr)
         disq = discr ** .5
         beta1 = (-b - disq) / 2 / a
         beta2 = (-b + disq) / 2 / a
-        if beta1 * beta2 > 0:    raise ValueError, (a, b, c, disq, beta1, beta2)
+        if beta1 * beta2 > 0:    raise ValueError(a, b, c, disq, beta1, beta2)
         beta = max(beta1, beta2)
     elif asmall and bsmall:
         return biarc_split(sp1, sp2, z1, z2, depth)
@@ -456,7 +462,7 @@ def biarc(sp1, sp2, z1, z2, depth=0):
         alpha = (p2a - p0a) % (2 * math.pi)
         if (p0a < p2a and (p1a < p0a or p2a < p1a)) or (p2a < p1a < p0a):
             alpha = -2 * math.pi + alpha
-        if abs(R.x) > 1000000 or abs(R.y) > 1000000 or (R - P0).mag < .1:
+        if abs(R.x) > 1000000 or abs(R.y) > 1000000 or (R - P0).mag() < .1:
             return None, None
         else:
             return R, alpha
@@ -593,14 +599,15 @@ class LaserGcode(inkex.Effect):
         p = self.transform_csp(p, layer)
 
         # Sort to reduce Rapid distance
-        k = range(1, len(p))
+        k = list(range(1, len(p)))
         keys = [0]
         while len(k) > 0:
             end = p[keys[-1]][-1][1]
-            dist = None
+            dist = (float('-inf'), float('-inf'))
             for i in range(len(k)):
                 start = p[k[i]][0][1]
                 dist = max((-((end[0] - start[0]) ** 2 + (end[1] - start[1]) ** 2), i), dist)
+
             keys += [k[dist[1]]]
             del k[dist[1]]
         for k in keys:
@@ -842,7 +849,7 @@ class LaserGcode(inkex.Effect):
         root = self.document.getroot()
         trans = []
         while (g != root):
-            if 'transform' in g.keys():
+            if 'transform' in list(g.keys()):
                 t = g.get('transform')
                 t = simpletransform.parseTransform(t)
                 trans = simpletransform.composeTransform(t, trans) if trans != [] else t
@@ -944,9 +951,9 @@ class LaserGcode(inkex.Effect):
     def transform_csp(self, csp_, layer, reverse=False):
         csp = [[[csp_[i][j][0][:], csp_[i][j][1][:], csp_[i][j][2][:]] for j in range(len(csp_[i]))] for i in
                range(len(csp_))]
-        for i in xrange(len(csp)):
-            for j in xrange(len(csp[i])):
-                for k in xrange(len(csp[i][j])):
+        for i in range(len(csp)):
+            for j in range(len(csp[i])):
+                for k in range(len(csp[i][j])):
                     csp[i][j][k] = self.transform(csp[i][j][k], layer, reverse)
         return csp
 
@@ -1047,7 +1054,7 @@ class LaserGcode(inkex.Effect):
                             "Warning! Found bad orientation points in '%s' layer. Resulting Gcode could be corrupt!") % layer.get(
                             inkex.addNS('label', 'inkscape')), "bad_orientation_points_in_some_layers")
                 elif i.tag == inkex.addNS('path', 'svg'):
-                    if "gcodetools" not in i.keys():
+                    if "gcodetools" not in list(i.keys()):
                         self.paths[layer] = self.paths[layer] + [i] if layer in self.paths else [i]
                         if i.get("id") in self.selected:
                             self.selected_paths[layer] = self.selected_paths[layer] + [
@@ -1164,7 +1171,7 @@ class LaserGcode(inkex.Effect):
             i = 0
             out = []
             for p in points:
-                for j in xrange(i, len(points)):
+                for j in range(i, len(points)):
                     if p == points[j]: points[j] = [None, None]
                 if p != [None, None]: out += [p]
             i += 1
@@ -1173,10 +1180,9 @@ class LaserGcode(inkex.Effect):
 
         def get_way_len(points):
             l = 0
-            for i in xrange(1, len(points)):
+            for i in range(1, len(points)):
                 l += math.sqrt((points[i][0] - points[i - 1][0]) ** 2 + (points[i][1] - points[i - 1][1]) ** 2)
             return l
-
 
         def sort_dxfpoints(points):
             points = remove_duplicates(points)
@@ -1199,7 +1205,7 @@ class LaserGcode(inkex.Effect):
             for w in ways:
                 tpoints = points[:]
                 cw = []
-                for j in xrange(0, len(points)):
+                for j in range(0, len(points)):
                     p = get_boundaries(get_boundaries(tpoints)[w[0]])[w[1]]
                     tpoints.remove(p[0])
                     cw += p
@@ -1221,7 +1227,7 @@ class LaserGcode(inkex.Effect):
         gcode = ""
 
         biarc_group = inkex.etree.SubElement(
-            self.selected_paths.keys()[0] if len(self.selected_paths.keys()) > 0 else self.layers[0],
+            list(self.selected_paths.keys())[0] if len(list(self.selected_paths.keys())) > 0 else self.layers[0],
             inkex.addNS('g', 'svg'))
         print_(("self.layers=", self.layers))
         print_(("paths=", paths))
@@ -1232,7 +1238,7 @@ class LaserGcode(inkex.Effect):
                 dxfpoints = []
                 for path in paths[layer]:
                     print_(str(layer))
-                    if "d" not in path.keys():
+                    if "d" not in list(path.keys()):
                         self.error(_(
                             "Warning: One or more paths dont have 'd' parameter, try to Ungroup (Ctrl+Shift+G) and Object to Path (Ctrl+Shift+C)!"),
                             "selection_contains_objects_that_are_not_paths")
@@ -1281,7 +1287,7 @@ class LaserGcode(inkex.Effect):
 
         if self.document.getroot().get('height') == "100%":
             doc_height = 1052.3622047
-            print_("Overruding height from 100 percents to %s" % doc_height)
+            print_("Overriding height from 100 percents to %s" % doc_height)
 
         print_("Document height: " + str(doc_height));
 
@@ -1301,7 +1307,7 @@ class LaserGcode(inkex.Effect):
             # X == Correct!
             # si == x,y coordinate in px
             # si have correct coordinates
-            # if layer have any tranform it will be in translate so lets add that
+            # if layer have any transform it will be in translate so lets add that
             si = [i[0] * orientation_scale, (i[1] * orientation_scale) + float(translate[1])]
             g = inkex.etree.SubElement(orientation_group, inkex.addNS('g', 'svg'),
                                        {'gcodetools': "Gcodetools orientation point (2 points)"})
