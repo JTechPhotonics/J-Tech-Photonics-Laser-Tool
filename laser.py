@@ -26,8 +26,6 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 import inkex
-import simplestyle
-import cubicsuperpath
 import simpletransform
 
 import os
@@ -40,6 +38,46 @@ import numpy
 import gettext
 
 _ = gettext.gettext
+
+# Deprecation hack. Access the formatStyle differently for inkscape >= 1.0
+target_version = 1.0
+
+if target_version < 1.0:
+    # simplestyle
+    import simplestyle
+
+    # etree
+    etree = inkex.etree
+
+    # cubicsuperpath
+    import cubicsuperpath
+    parsePath = cubicsuperpath.parsePath
+
+    # Inkex.Boolean
+    inkex.Boolean = bool
+
+else:
+    # simplestyle
+
+    # Class and method names follow the old Inkscape API for compatibility's sake.
+    # When support is dropped for older versions this can be ganged to follow PEP 8.
+    class simplestyle(object):  # noqa
+        # I think anonymous declarations would have been cleaner. However, Python 2 doesn't like how I use them
+        @staticmethod
+        def formatStyle(a):  # noqa
+            return str(inkex.Style(a))
+
+        @staticmethod
+        def parseStyle(s):  # noqa
+            return dict(inkex.Style.parse_str(s))
+
+    # etree
+    from lxml import etree  # noqa
+
+    # cubicsuperpath
+    from inkex.paths import CubicSuperPath  # noqa
+    parsePath = CubicSuperPath
+
 
 # Check if inkex has error messages. (0.46 version does not have one) Could be removed later.
 if "errormsg" not in dir(inkex):
@@ -64,6 +102,7 @@ def bezierslopeatt(xxx_todo_changeme, t):
                 dx, dy = 1, 1
 
     return dx, dy
+
 
 bezmisc.bezierslopeatt = bezierslopeatt
 
@@ -290,9 +329,9 @@ def csp_to_arc_distance(sp1, sp2, arc1, arc2, tolerance=0.01):  # arc = [start,e
             t = float(j) / n
             p = csp_at_t(sp1, sp2, t)
             d = min(point_to_arc_distance(p, arc1), point_to_arc_distance(p, arc2))
-            #inkex.debug("---Debug---")
-            #inkex.debug(str(d1) + str(d))
-            #inkex.debug(str(tuple(d1)) + str(tuple(d)))
+            # inkex.debug("---Debug---")
+            # inkex.debug(str(d1) + str(d))
+            # inkex.debug(str(tuple(d1)) + str(tuple(d)))
             d1 = max(tuple(d1), tuple(d))
         n = n * 2
     return d1[0]
@@ -530,67 +569,102 @@ class LaserGcode(inkex.Effect):
             "G1 F" + self.options.travel_speed + "\n" + gcode + self.footer)
         f.close()
 
-    def __init__(self):
-        inkex.Effect.__init__(self)
+    def add_arguments_old(self):
         add_option = self.OptionParser.add_option
 
-        add_option("-d", "--directory", action="store", type="string", dest="directory", default="",
-                   help="Output directory")
+        for arg in self.arguments:
+            # Stringify add_option arguments
+            action = arg["action"] if "action" in arg else "store"
+            arg_type = {str: "str", int: "int", bool: "inkbool"}[arg["type"]]
+            default = arg["type"](arg["default"])
 
-        add_option("-f", "--filename", action="store", type="string", dest="file",
-                   default="output.gcode", help="File name")
+            add_option("", arg["name"], action=action, type=arg_type, dest=arg["dest"],
+                       default=default, help=arg["help"])
 
-        add_option("", "--add-numeric-suffix-to-filename", action="store", type="inkbool",
-                   dest="add_numeric_suffix_to_filename", default=False,
-                   help="Add numeric suffix to file name")
+    def add_arguments_new(self):
+        add_argument = self.arg_parser.add_argument
 
-        add_option("", "--laser-command", action="store", type="string", dest="laser_command",
-                   default="M03", help="Laser gcode command")
+        for arg in self.arguments:
+            # Not using kwargs unpacking for clarity, flexibility and constancy with add_arguments_old
+            action = arg["action"] if "action" in arg else "store"
+            add_argument(arg["name"], action=action, type=arg["type"], dest=arg["dest"],
+                         default=arg["default"], help=arg["help"])
 
-        add_option("", "--laser-off-command", action="store", type="string", dest="laser_off_command",
-                   default="M05", help="Laser gcode end command")
+    def __init__(self):
+        inkex.Effect.__init__(self)
 
-        add_option("", "--laser-speed", action="store", type="int", dest="laser_speed", default="750",
-                   help="Laser speed (mm/min)")
+        # Define command line arguments, inkex will use these to interface with the GUI defined in laser.ini
 
-        add_option("", "--travel-speed", action="store", type="string", dest="travel_speed",
-                   default="3000", help="Travel speed (mm/min)")
+        self.arguments = [
+            {"name": "--directory", "type": str, "dest": "directory",
+             "default": "", "help": "Output directory"},
 
-        add_option("", "--laser-power", action="store", type="int", dest="laser_power", default="255",
-                   help="S# is 256 or 10000 for full power")
+            {"name": "--filename", "type": str, "dest": "file",
+             "default": "output.gcode", "help": "File name"},
 
-        add_option("", "--passes", action="store", type="int", dest="passes", default="1",
-                   help="Quantity of passes")
+            {"name": "--add-numeric-suffix-to-filename", "type": inkex.Boolean,
+             "dest": "add_numeric_suffix_to_filename", "default": False,
+             "help": "Add numeric suffix to file name"},
 
-        add_option("", "--pass-depth", action="store", type="string", dest="pass_depth", default="1",
-                   help="Depth of laser cut")
+            {"name": "--laser-command", "type": str, "dest": "laser_command",
+             "default": "M03", "help": "Laser gcode command"},
 
-        add_option("", "--power-delay", action="store", type="string", dest="power_delay",
-                   default="0", help="Laser power-on delay (ms)")
+            {"name": "--laser-off-command", "type": str, "dest": "laser_off_command",
+             "default": "M05", "help": "Laser gcode end command"},
 
-        add_option("", "--suppress-all-messages", action="store", type="inkbool",
-                   dest="suppress_all_messages", default=True,
-                   help="Hide messages during g-code generation")
+            {"name": "--laser-speed", "type": int, "dest": "laser_speed", "default": 750,
+             "help": "Laser speed (mm/min},"},
 
-        add_option("", "--create-log", action="store", type="inkbool", dest="log_create_log",
-                   default=False, help="Create log files")
+            {"name": "--travel-speed", "type": str, "dest": "travel_speed",
+             "default": "3000", "help": "Travel speed (mm/min},"},
 
-        add_option("", "--log-filename", action="store", type="string", dest="log_filename",
-                   default='', help="Create log files")
+            {"name": "--laser-power", "type": int, "dest": "laser_power", "default": 255,
+             "help": "S# is 256 or 10000 for full power"},
 
-        add_option("", "--engraving-draw-calculation-paths", action="store", type="inkbool",
-                   dest="engraving_draw_calculation_paths", default=False,
-                   help="Draw additional graphics to debug engraving path")
+            {"name": "--passes", "type": int, "dest": "passes", "default": 1,
+             "help": "Quantity of passes"},
 
-        add_option("", "--unit", action="store", type="string", dest="unit",
-                   default="G21 (All units in mm)", help="Units either mm or inches")
+            {"name": "--pass-depth", "type": str, "dest": "pass_depth", "default": 1,
+             "help": "Depth of laser cut"},
 
-        add_option("", "--active-tab", action="store", type="string", dest="active_tab", default="",
-                   help="Defines which tab is active")
+            {"name": "--power-delay", "type": str, "dest": "power_delay",
+             "default": "0", "help": "Laser power-on delay (ms},"},
 
-        add_option("", "--biarc-max-split-depth", action="store", type="int",
-                   dest="biarc_max_split_depth", default="4",
-                   help="Defines maximum depth of splitting while approximating using biarcs.")
+            {"name": "--suppress-all-messages", "type": inkex.Boolean,
+             "dest": "suppress_all_messages", "default": True,
+             "help": "Hide messages during g-code generation"},
+
+            {"name": "--create-log", "type": bool, "dest": "log_create_log",
+             "default": False, "help": "Create log files"},
+
+            {"name": "--log-filename", "type": str, "dest": "log_filename",
+             "default": '', "help": "Create log files"},
+
+            {"name": "--engraving-draw-calculation-paths", "type": inkex.Boolean,
+             "dest": "engraving_draw_calculation_paths", "default": False,
+             "help": "Draw additional graphics to debug engraving path"},
+
+            {"name": "--unit", "type": str, "dest": "unit",
+             "default": "G21 (All units in mm},", "help": "Units either mm or inches"},
+
+            {"name": "--active-tab", "type": str, "dest": "active_tab", "default": "",
+             "help": "Defines which tab is active"},
+
+            {"name": "--biarc-max-split-depth", "type": int,
+             "dest": "biarc_max_split_depth", "default": "4",
+             "help": "Defines maximum depth of splitting while approximating using biarcs."}
+        ]
+
+        if target_version < 1.0:
+            self.add_arguments_old()
+        else:
+            self.add_arguments_new()
+
+        # Another hack to maintain support across different Inkscape versions
+        if target_version < 1.0:
+            self.selected_hack = self.selected
+        else:
+            self.selected_hack = self.svg.selected
 
     def parse_curve(self, p, layer, w=None, f=None):
         c = []
@@ -628,21 +702,21 @@ class LaserGcode(inkex.Effect):
         self.get_defs()
         # Add marker to defs if it does not exist
         if "DrawCurveMarker" not in self.defs:
-            defs = inkex.etree.SubElement(self.document.getroot(), inkex.addNS("defs", "svg"))
-            marker = inkex.etree.SubElement(defs, inkex.addNS("marker", "svg"),
+            defs = etree.SubElement(self.document.getroot(), inkex.addNS("defs", "svg"))
+            marker = etree.SubElement(defs, inkex.addNS("marker", "svg"),
                                             {"id": "DrawCurveMarker", "orient": "auto", "refX": "-8",
                                              "refY": "-2.41063", "style": "overflow:visible"})
-            inkex.etree.SubElement(marker, inkex.addNS("path", "svg"),
+            etree.SubElement(marker, inkex.addNS("path", "svg"),
                                    {
                                        "d": "m -6.55552,-2.41063 0,0 L -13.11104,0 c 1.0473,-1.42323 1.04126,-3.37047 0,-4.82126",
                                        "style": "fill:#000044; fill-rule:evenodd;stroke-width:0.62500000;stroke-linejoin:round;"}
                                    )
         if "DrawCurveMarker_r" not in self.defs:
-            defs = inkex.etree.SubElement(self.document.getroot(), inkex.addNS("defs", "svg"))
-            marker = inkex.etree.SubElement(defs, inkex.addNS("marker", "svg"),
+            defs = etree.SubElement(self.document.getroot(), inkex.addNS("defs", "svg"))
+            marker = etree.SubElement(defs, inkex.addNS("marker", "svg"),
                                             {"id": "DrawCurveMarker_r", "orient": "auto", "refX": "8",
                                              "refY": "-2.41063", "style": "overflow:visible"})
-            inkex.etree.SubElement(marker, inkex.addNS("path", "svg"),
+            etree.SubElement(marker, inkex.addNS("path", "svg"),
                                    {
                                        "d": "m 6.55552,-2.41063 0,0 L 13.11104,0 c -1.0473,-1.42323 -1.04126,-3.37047 0,-4.82126",
                                        "style": "fill:#000044; fill-rule:evenodd;stroke-width:0.62500000;stroke-linejoin:round;"}
@@ -654,7 +728,7 @@ class LaserGcode(inkex.Effect):
             style['biarc%s_r' % i] = simplestyle.formatStyle(style['biarc%s_r' % i])
 
         if group is None:
-            group = inkex.etree.SubElement(self.layers[min(1, len(self.layers) - 1)], inkex.addNS('g', 'svg'),
+            group = etree.SubElement(self.layers[min(1, len(self.layers) - 1)], inkex.addNS('g', 'svg'),
                                            {"gcodetools": "Preview group"})
         s, arcn = '', 0
 
@@ -672,7 +746,7 @@ class LaserGcode(inkex.Effect):
 
             if s != '':
                 if s[1] == 'line':
-                    inkex.etree.SubElement(group, inkex.addNS('path', 'svg'),
+                    etree.SubElement(group, inkex.addNS('path', 'svg'),
                                            {
                                                'style': style['line'],
                                                'd': 'M %s,%s L %s,%s' % (s[0][0], s[0][1], si[0][0], si[0][1]),
@@ -701,7 +775,7 @@ class LaserGcode(inkex.Effect):
                         a_end = a_st * 1
                         a_st = a_st + a
                         st = style['biarc%s_r' % (arcn % 2)]
-                    inkex.etree.SubElement(group, inkex.addNS('path', 'svg'),
+                    etree.SubElement(group, inkex.addNS('path', 'svg'),
                                            {
                                                'style': st,
                                                inkex.addNS('cx', 'sodipodi'): str(c[0]),
@@ -1038,7 +1112,7 @@ class LaserGcode(inkex.Effect):
             items.reverse()
             for i in items:
                 if selected:
-                    self.selected[i.get("id")] = i
+                    self.selected_hack[i.get("id")] = i
                 if i.tag == inkex.addNS("g", 'svg') and i.get(inkex.addNS('groupmode', 'inkscape')) == 'layer':
                     self.layers += [i]
                     recursive_search(i, i)
@@ -1056,12 +1130,12 @@ class LaserGcode(inkex.Effect):
                 elif i.tag == inkex.addNS('path', 'svg'):
                     if "gcodetools" not in list(i.keys()):
                         self.paths[layer] = self.paths[layer] + [i] if layer in self.paths else [i]
-                        if i.get("id") in self.selected:
+                        if i.get("id") in self.selected_hack:
                             self.selected_paths[layer] = self.selected_paths[layer] + [
                                 i] if layer in self.selected_paths else [i]
                 elif i.tag == inkex.addNS("g", 'svg'):
-                    recursive_search(i, layer, (i.get("id") in self.selected))
-                elif i.get("id") in self.selected:
+                    recursive_search(i, layer, (i.get("id") in self.selected_hack))
+                elif i.get("id") in self.selected_hack:
                     self.error(_(
                         "This extension works with Paths and Dynamic Offsets and groups of them only! All other objects will be ignored!\nSolution 1: press Path->Object to path or Shift+Ctrl+C.\nSolution 2: Path->Dynamic offset or Ctrl+J.\nSolution 3: export all contours to PostScript level 2 (File->Save As->.ps) and File->Import this file."),
                         "selection_contains_objects_that_are_not_paths")
@@ -1089,7 +1163,7 @@ class LaserGcode(inkex.Effect):
             point = [[], []]
             for node in i:
                 if node.get('gcodetools') == "Gcodetools orientation point arrow":
-                    point[0] = self.apply_transforms(node, cubicsuperpath.parsePath(node.get("d")))[0][0][1]
+                    point[0] = self.apply_transforms(node, parsePath(node.get("d")))[0][0][1]
                 if node.get('gcodetools') == "Gcodetools orientation point text":
                     r = re.match(
                         r'(?i)\s*\(\s*(-?\s*\d*(?:,|\.)*\d*)\s*;\s*(-?\s*\d*(?:,|\.)*\d*)\s*;\s*(-?\s*\d*(?:,|\.)*\d*)\s*\)\s*',
@@ -1226,7 +1300,7 @@ class LaserGcode(inkex.Effect):
         self.check_dir()
         gcode = ""
 
-        biarc_group = inkex.etree.SubElement(
+        biarc_group = etree.SubElement(
             list(self.selected_paths.keys())[0] if len(list(self.selected_paths.keys())) > 0 else self.layers[0],
             inkex.addNS('g', 'svg'))
         print_(("self.layers=", self.layers))
@@ -1243,7 +1317,7 @@ class LaserGcode(inkex.Effect):
                             "Warning: One or more paths dont have 'd' parameter, try to Ungroup (Ctrl+Shift+G) and Object to Path (Ctrl+Shift+C)!"),
                             "selection_contains_objects_that_are_not_paths")
                         continue
-                    csp = cubicsuperpath.parsePath(path.get("d"))
+                    csp = parsePath(path.get("d"))
                     csp = self.apply_transforms(path, csp)
                     if path.get("dxfpoint") == "1":
                         tmp_curve = self.transform_csp(csp, layer)
@@ -1273,7 +1347,7 @@ class LaserGcode(inkex.Effect):
             self.error(_("Active layer already has orientation points! Remove them or select another layer!"),
                        "active_layer_already_has_orientation_points")
 
-        orientation_group = inkex.etree.SubElement(layer, inkex.addNS('g', 'svg'),
+        orientation_group = etree.SubElement(layer, inkex.addNS('g', 'svg'),
                                                    {"gcodetools": "Gcodetools orientation group"})
 
         # translate == ['0', '-917.7043']
@@ -1309,16 +1383,16 @@ class LaserGcode(inkex.Effect):
             # si have correct coordinates
             # if layer have any transform it will be in translate so lets add that
             si = [i[0] * orientation_scale, (i[1] * orientation_scale) + float(translate[1])]
-            g = inkex.etree.SubElement(orientation_group, inkex.addNS('g', 'svg'),
+            g = etree.SubElement(orientation_group, inkex.addNS('g', 'svg'),
                                        {'gcodetools': "Gcodetools orientation point (2 points)"})
-            inkex.etree.SubElement(g, inkex.addNS('path', 'svg'),
+            etree.SubElement(g, inkex.addNS('path', 'svg'),
                                    {
                                        'style': "stroke:none;fill:#000000;",
                                        'd': 'm %s,%s 2.9375,-6.343750000001 0.8125,1.90625 6.843748640396,-6.84374864039 0,0 0.6875,0.6875 -6.84375,6.84375 1.90625,0.812500000001 z z' % (
                                            si[0], -si[1] + doc_height),
                                        'gcodetools': "Gcodetools orientation point arrow"
                                    })
-            t = inkex.etree.SubElement(g, inkex.addNS('text', 'svg'),
+            t = etree.SubElement(g, inkex.addNS('text', 'svg'),
                                        {
                                            'style': "font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;",
                                            inkex.addNS("space", "xml"): "preserve",
@@ -1379,4 +1453,7 @@ class LaserGcode(inkex.Effect):
 
 
 e = LaserGcode()
-e.affect()
+if target_version < 1.0:
+    e.affect()
+else:
+    e.run()
