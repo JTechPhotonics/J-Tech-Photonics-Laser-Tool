@@ -26,6 +26,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 import inkex
+from inkex.transforms import Transform
+from inkex.paths import Path
 import simpletransform
 
 import os
@@ -935,7 +937,7 @@ class LaserGcode(inkex.Effect):
     def apply_transforms(self, g, csp):
         trans = self.get_transforms(g)
         if trans != []:
-            simpletransform.applyTransformToPath(trans, csp)
+            csp = Path(csp).transform(Transform(trans)).to_superpath()
         return csp
 
 
