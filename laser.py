@@ -29,6 +29,7 @@ import inkex
 import simpletransform
 
 import os
+from pathlib import Path
 import math
 import bezmisc
 import re
@@ -563,7 +564,7 @@ class LaserGcode(inkex.Effect):
         gcode_pass = gcode
         for x in range(1, self.options.passes):
             gcode += "G91\nG1 Z-" + self.options.pass_depth + "\nG90\n" + gcode_pass
-        f = open(self.options.directory + self.options.file, "w")
+        f = open(self.options.directory / self.options.file, "w")
         f.write(
             self.options.laser_off_command + " S0" + "\n" + self.header +
             "G1 F" + self.options.travel_speed + "\n" + gcode + self.footer)
@@ -742,7 +743,7 @@ class LaserGcode(inkex.Effect):
         for sk in curve:
             si = sk[:]
             si[0], si[2] = self.transform(si[0], layer, True), (
-                self.transform(si[2], layer, True) if type(si[2]) == type([]) and len(si[2]) == 2 else si[2])
+                self.transform(si[2], layer, True) if isinstance(si[2], list) and len(si[2]) == 2 else si[2])
 
             if s != '':
                 if s[1] == 'line':
@@ -790,63 +791,82 @@ class LaserGcode(inkex.Effect):
                                            })
             s = si
 
-
     def check_dir(self):
-        if self.options.directory[-1] not in ["/", "\\"]:
-            if "\\" in self.options.directory:
-                self.options.directory += "\\"
-            else:
-                self.options.directory += "/"
-        print_("Checking direcrory: '%s'" % self.options.directory)
-        if (os.path.isdir(self.options.directory)):
-            if (os.path.isfile(self.options.directory + 'header')):
-                f = open(self.options.directory + 'header', 'r')
-                self.header = f.read()
-                f.close()
-            else:
-                self.header = defaults['header']
-            if (os.path.isfile(self.options.directory + 'footer')):
-                f = open(self.options.directory + 'footer', 'r')
-                self.footer = f.read()
-                f.close()
-            else:
-                self.footer = defaults['footer']
 
-            if self.options.unit == "G21 (All units in mm)":
-                self.header += "G21\n"
-            elif self.options.unit == "G20 (All units in inches)":
-                self.header += "G20\n"
-        else:
-            self.error(_("Directory does not exist! Please specify existing directory at options tab!"), "error")
+        # Verify that a save directory was provided
+        if len(self.options.directory) == 0:
+            self.error(_("No save directory given."), "error")
+
+        # directory = os.path.abspath(os.path.expanduser(self.options.directory))
+        directory = Path(self.options.directory).expanduser()
+
+        print_("Checking directory: '%s'" % directory)
+
+        if not directory.is_dir():
+            # TODO: Possibly create a path if it doesn't exist?
+            self.error(_("Directory does not exist. Please specify existing directory!"), "error")
             return False
+
+        # Create G code header
+        # TODO: Allow having header/footer with .gcode extension
+        if directory.joinpath('header').is_file():
+            with directory.joinpath('header').open('r') as f:
+                self.header = f.read()
+        else:
+            self.header = defaults['header']
+        # Create G code footer
+        if directory.joinpath('footer').is_file():
+            with directory.joinpath('footer').open('r') as f:
+                self.footer = f.read()
+        else:
+            self.footer = defaults['footer']
+
+        # Add gcode unit handling
+        if self.options.unit == "G21 (All units in mm)":
+            self.header += "G21\n"
+        elif self.options.unit == "G20 (All units in inches)":
+            self.header += "G20\n"
 
         if self.options.add_numeric_suffix_to_filename:
-            dir_list = os.listdir(self.options.directory)
-            if "." in self.options.file:
-                r = re.match(r"^(.*)(\..*)$", self.options.file)
-                ext = r.group(2)
-                name = r.group(1)
+            file = Path(self.options.file)
+            name = file.stem
+            ext = file.suffix
+
+            # Find all files that match the format
+            all_filenames = [f.name for f in directory.glob("{}_*{}".format(name, ext))]
+            # Get the highest file number used so far
+            num_length = 4  # Length of numbers in file names (zero-padded)
+            # Get the stems (no extensions) of all files that match the format
+            stems = [Path(f).stem for f in all_filenames if re.match(
+                r"^%s_0*(\d+)%s$".format() % (re.escape(name), re.escape(ext)), f)]
+            # Extract the regex of the 4-digit number portion of the filename
+            file_num_re = [re.search(r"_[0-9]{%s}" % num_length, s) for s in stems]
+            # Get the numbers from the filename regex
+            file_nums = [int(f.group(0)[1:]) for f in file_num_re if f is not None]
+            if len(file_nums) == 0:
+                file_num = 1
             else:
-                ext = ""
-                name = self.options.file
-            max_n = 0
-            for s in dir_list:
-                r = re.match(r"^%s_0*(\d+)%s$" % (re.escape(name), re.escape(ext)), s)
-                if r:
-                    max_n = max(max_n, int(r.group(1)))
-            filename = name + "_" + ("0" * (4 - len(str(max_n + 1))) + str(max_n + 1)) + ext
+                file_num = max(file_nums) + 1
+            # Format the filename with the new number
+            filename = "{name}_{num}{ext}".format(
+                name=name,
+                num=str(file_num).zfill(num_length),
+                ext=ext
+            )
             self.options.file = filename
 
-        print_("Testing writing rights on '%s'" % (self.options.directory + self.options.file))
+        # Check whether the file can be written here
+        save_filename = directory / self.options.file
+        print_("Testing writing rights on '{}'".format(save_filename))
         try:
-            f = open(self.options.directory + self.options.file, "w")
-            f.close()
-        except:
-            self.error(_("Can not write to specified file!\n%s" % (self.options.directory + self.options.file)),
-                       "error")
+            with open(save_filename, 'w') as f:
+                pass
+        except IOError:
+            self.error(_("Can not write to specified file!\n{}".format(save_filename)), "error")
             return False
-        return True
 
+        self.options.directory = directory
+        return True
 
     ################################################################################
     #
@@ -874,6 +894,7 @@ class LaserGcode(inkex.Effect):
 
         if len(curve) == 0: return ""
 
+        # TODO: This makes no sense
         try:
             self.last_used_tool == None
         except:
@@ -918,7 +939,6 @@ class LaserGcode(inkex.Effect):
             g += tool['gcode after path'] + "\n"
         return g
 
-
     def get_transforms(self, g):
         root = self.document.getroot()
         trans = []
@@ -931,13 +951,11 @@ class LaserGcode(inkex.Effect):
             g = g.getparent()
         return trans
 
-
     def apply_transforms(self, g, csp):
         trans = self.get_transforms(g)
         if trans != []:
             simpletransform.applyTransformToPath(trans, csp)
         return csp
-
 
     def transform(self, source_point, layer, reverse=False):
         if layer == None:
@@ -1021,7 +1039,6 @@ class LaserGcode(inkex.Effect):
             t = self.transform_matrix_reverse[layer]
         return [t[0][0] * x + t[0][1] * y + t[0][2], t[1][0] * x + t[1][1] * y + t[1][2]]
 
-
     def transform_csp(self, csp_, layer, reverse=False):
         csp = [[[csp_[i][j][0][:], csp_[i][j][1][:], csp_[i][j][2][:]] for j in range(len(csp_[i]))] for i in
                range(len(csp_))]
@@ -1091,12 +1108,12 @@ class LaserGcode(inkex.Effect):
 
         recursive(self.document.getroot())
 
-
     ################################################################################
     #
     #        Get Gcodetools info from the svg
     #
     ################################################################################
+
     def get_info(self):
         self.selected_paths = {}
         self.paths = {}
@@ -1139,7 +1156,6 @@ class LaserGcode(inkex.Effect):
                     self.error(_(
                         "This extension works with Paths and Dynamic Offsets and groups of them only! All other objects will be ignored!\nSolution 1: press Path->Object to path or Shift+Ctrl+C.\nSolution 2: Path->Dynamic offset or Ctrl+J.\nSolution 3: export all contours to PostScript level 2 (File->Save As->.ps) and File->Import this file."),
                         "selection_contains_objects_that_are_not_paths")
-
 
         recursive_search(self.document.getroot(), self.document.getroot())
 
@@ -1240,7 +1256,6 @@ class LaserGcode(inkex.Effect):
                     out[3] = [p]
             return out
 
-
         def remove_duplicates(points):
             i = 0
             out = []
@@ -1250,7 +1265,6 @@ class LaserGcode(inkex.Effect):
                 if p != [None, None]: out += [p]
             i += 1
             return (out)
-
 
         def get_way_len(points):
             l = 0
@@ -1402,7 +1416,6 @@ class LaserGcode(inkex.Effect):
                                        })
             t.text = "(%s; %s; %s)" % (i[0], i[1], i[2])
 
-
     ################################################################################
     #
     #        Effect
@@ -1410,6 +1423,7 @@ class LaserGcode(inkex.Effect):
     #        Main function of Gcodetools class
     #
     ################################################################################
+
     def effect(self):
         global options
         options = self.options

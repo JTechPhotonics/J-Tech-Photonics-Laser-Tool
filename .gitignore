@@ -7,3 +7,4 @@
 remove_unused.py
 copy.bat
 laser27.py
+.mypy_cache/
