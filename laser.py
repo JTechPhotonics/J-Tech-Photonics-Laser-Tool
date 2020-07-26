@@ -26,7 +26,8 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 """
 import inkex
-import simpletransform
+from inkex.transforms import Transform
+from inkex.paths import Path
 
 import os
 import math
@@ -925,8 +926,8 @@ class LaserGcode(inkex.Effect):
         while (g != root):
             if 'transform' in list(g.keys()):
                 t = g.get('transform')
-                t = simpletransform.parseTransform(t)
-                trans = simpletransform.composeTransform(t, trans) if trans != [] else t
+                t = [list(row) for row in Transform(t).matrix] 
+                trans = [list(row) for row in (Transform(t) * Transform(trans)).matrix] if trans != [] else t
                 print_(trans)
             g = g.getparent()
         return trans
@@ -935,7 +936,7 @@ class LaserGcode(inkex.Effect):
     def apply_transforms(self, g, csp):
         trans = self.get_transforms(g)
         if trans != []:
-            simpletransform.applyTransformToPath(trans, csp)
+            csp = Path(csp).transform(Transform(trans)).to_superpath()
         return csp
 
 
