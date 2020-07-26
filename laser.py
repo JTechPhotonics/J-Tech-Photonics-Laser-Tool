@@ -358,12 +358,11 @@ def between(c, x, y):
 
 # Print arguments into specified log file
 def print_(*arg):
-    f = open(options.log_filename, "a")
-    for s in arg:
-        s = str(str(s).encode('unicode_escape')) + " "
-        f.write(s)
-    f.write("\n")
-    f.close()
+    with open(options.log_filename, "a") as log_file:
+        for s in arg:
+            s = str(str(s).encode('unicode_escape')) + " "
+            log_file.write(s)
+        log_file.write("\n")
 
 
 ################################################################################
@@ -561,14 +560,25 @@ class ArrangementGenetic:
 class LaserGcode(inkex.Effect):
 
     def export_gcode(self, gcode):
+        # Repeat the given gcode for multiple passes, and add the header and footer
         gcode_pass = gcode
         for x in range(1, self.options.passes):
-            gcode += "G91\nG1 Z-" + self.options.pass_depth + "\nG90\n" + gcode_pass
-        f = open(self.options.directory / self.options.file, "w")
-        f.write(
-            self.options.laser_off_command + " S0" + "\n" + self.header +
-            "G1 F" + self.options.travel_speed + "\n" + gcode + self.footer)
-        f.close()
+            gcode += "G91\nG1 Z-{pass_depth}\nG90\n{gcode_pass}".format(
+                pass_depth=self.options.pass_depth,
+                gcode_pass=gcode_pass)
+            # gcode += "G91\nG1 Z-" + self.options.pass_depth + "\nG90\n" + gcode_pass
+        complete_gcode = "{off_cmd} S0\n{header}\nG1 F{travel_speed}\n{gcode}\n{footer}".format(
+            off_cmd=self.options.laser_off_command,
+            header=self.header,
+            travel_speed=self.options.travel_speed,
+            gcode=gcode,
+            footer=self.footer
+        )
+        with open(self.options.directory / self.options.file, "w") as gcode_file:
+            gcode_file.write(complete_gcode)
+            # gcode_file.write(
+            #     self.options.laser_off_command + " S0" + "\n" + self.header +
+            #     "G1 F" + self.options.travel_speed + "\n" + gcode + self.footer)
 
     def add_arguments_old(self):
         add_option = self.OptionParser.add_option
@@ -792,15 +802,36 @@ class LaserGcode(inkex.Effect):
             s = si
 
     def check_dir(self):
+        """
+        Validate the given directory for saving the gcode output and perform
+        setup.
+
+        This includes:
+
+        - Loading any header and footer gcode files from the given directory
+        - Correctly parsing the units for the header and footer files
+        - If necessary, computing the index for sequentially numbered outputs
+        - Generate the name of the output gcode file
+        - Validate that the output file can be written to the directory
+
+        This supports using `~` to indicate the home directory (in both Windows
+        and POSIX systems) from the user-input options
+
+        Returns
+        -------
+        bool
+            Whether directory was successfully validated
+        """
 
         # Verify that a save directory was provided
         if len(self.options.directory) == 0:
             self.error(_("No save directory given."), "error")
+            return False
 
         # directory = os.path.abspath(os.path.expanduser(self.options.directory))
         directory = Path(self.options.directory).expanduser()
 
-        print_("Checking directory: '%s'" % directory)
+        print_("Checking directory: '{}'".format(directory))
 
         if not directory.is_dir():
             # TODO: Possibly create a path if it doesn't exist?
@@ -810,14 +841,14 @@ class LaserGcode(inkex.Effect):
         # Create G code header
         # TODO: Allow having header/footer with .gcode extension
         if directory.joinpath('header').is_file():
-            with directory.joinpath('header').open('r') as f:
-                self.header = f.read()
+            with directory.joinpath('header').open('r') as file:
+                self.header = file.read()
         else:
             self.header = defaults['header']
         # Create G code footer
         if directory.joinpath('footer').is_file():
-            with directory.joinpath('footer').open('r') as f:
-                self.footer = f.read()
+            with directory.joinpath('footer').open('r') as file:
+                self.footer = file.read()
         else:
             self.footer = defaults['footer']
 
@@ -838,7 +869,7 @@ class LaserGcode(inkex.Effect):
             num_length = 4  # Length of numbers in file names (zero-padded)
             # Get the stems (no extensions) of all files that match the format
             stems = [Path(f).stem for f in all_filenames if re.match(
-                r"^%s_0*(\d+)%s$".format() % (re.escape(name), re.escape(ext)), f)]
+                r"^%s_0*(\d+)%s$" % (re.escape(name), re.escape(ext)), f)]
             # Extract the regex of the 4-digit number portion of the filename
             file_num_re = [re.search(r"_[0-9]{%s}" % num_length, s) for s in stems]
             # Get the numbers from the filename regex
@@ -859,7 +890,7 @@ class LaserGcode(inkex.Effect):
         save_filename = directory / self.options.file
         print_("Testing writing rights on '{}'".format(save_filename))
         try:
-            with open(save_filename, 'w') as f:
+            with open(save_filename, 'w') as _:
                 pass
         except IOError:
             self.error(_("Can not write to specified file!\n{}".format(save_filename)), "error")
@@ -1434,11 +1465,11 @@ class LaserGcode(inkex.Effect):
         if self.options.log_create_log:
             try:
                 if os.path.isfile(self.options.log_filename): os.remove(self.options.log_filename)
-                f = open(self.options.log_filename, "a")
-                f.write("Gcodetools log file.\nStarted at %s.\n%s\n" % (
-                    time.strftime("%d.%m.%Y %H:%M:%S"), options.log_filename))
-                f.write("%s tab is active.\n" % self.options.active_tab)
-                f.close()
+                with open(self.options.log_filename, 'a') as log_file:
+                    log_file.write("Gcodetools log file.\nStarted at {}.\n{}\n".format(
+                        time.strftime("%d.%m.%Y %H:%M:%S"),
+                        options.log_filename))
+                    log_file.write("{} tab is active.\n".format(self.options.active_tab))
             except:
                 print_ = lambda *x: None
         else:
