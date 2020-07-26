@@ -119,7 +119,7 @@ straight_distance_tolerance = 0.0001
 engraving_tolerance = 0.0001
 loft_lengths_tolerance = 0.0000001
 options = {}
-defaults = {
+DEFAULTS = {
     'header': """
 G90
 """,
@@ -127,6 +127,10 @@ G90
 
 """
 }
+# Filenames (in the output path) to check for header and footer gcode
+# If both exist, the first in these lists will be used
+HEADER_FILENAMES = ['header', 'header.gcode']
+FOOTER_FILENAMES = ['footer', 'footer.gcode']
 
 intersection_recursion_depth = 10
 intersection_tolerance = 0.00001
@@ -840,23 +844,31 @@ class LaserGcode(inkex.Effect):
         print_("Checking directory: '{}'".format(directory))
 
         if not directory.is_dir():
-            # TODO: Possibly create a path if it doesn't exist?
-            self.error(_("Directory does not exist. Please specify existing directory!"), "error")
-            return False
+            # Create the path to the save file if it doesn't exist
+            try:
+                directory.mkdir(parents=True, exist_ok=True)
+            except IOError:
+                self.error(_("Directory does not exist and could not be created."), "error")
+                return False
 
         # Create G code header
-        # TODO: Allow having header/footer with .gcode extension
-        if directory.joinpath('header').is_file():
-            with directory.joinpath('header').open('r') as file:
+        headers = [directory.joinpath(h) for h in HEADER_FILENAMES if directory.joinpath(h).is_file()]
+        if len(headers) != 0:
+            header_file = headers[0]
+            with header_file.open('r') as file:
                 self.header = file.read()
         else:
-            self.header = defaults['header']
+            # No header file found. Use the default header
+            self.header = DEFAULTS['header']
         # Create G code footer
-        if directory.joinpath('footer').is_file():
-            with directory.joinpath('footer').open('r') as file:
+        footers = [directory.joinpath(f) for f in FOOTER_FILENAMES if directory.joinpath(f).is_file()]
+        if len(footers) != 0:
+            footer_file = footers[0]
+            with footer_file.open('r') as file:
                 self.footer = file.read()
         else:
-            self.footer = defaults['footer']
+            # No footer file found. Use the default footer
+            self.footer = DEFAULTS['footer']
 
         # Add gcode unit handling
         if self.options.unit == "G21 (All units in mm)":
