@@ -19,4 +19,5 @@ More documentation coming soon. In the meantime you can refer to [JTP's official
 
 ## For developers
 
-Pull requests are welcome both for bug fixes and new features. Just make sure to test your code on both Python >=2.6 and >=3.5.
+Pull requests are welcome. Just make sure to test your code on both Python >=2.6 and >=3.5 for the main branch, and Python >= 3.6 for the development branch (In the next major release we'll drop support for older python versions in an effort to improve code readability).
+
