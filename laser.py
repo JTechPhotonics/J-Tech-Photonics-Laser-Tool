@@ -559,14 +559,23 @@ class ArrangementGenetic:
 
 class LaserGcode(inkex.Effect):
 
-    def export_gcode(self, gcode):
+    def export_gcode(self, gcode_single_pass: str):
+        """
+        Use the G-code given for a single pass to generate and save the complete
+        `.gcode` file. This will include (possibly) multiple passes, and the
+        header and footer G-code.
+
+        Parameters
+        ----------
+        gcode_single_pass : str
+            G-code for a single pass of cutting
+        """
         # Repeat the given gcode for multiple passes, and add the header and footer
-        gcode_pass = gcode
-        for x in range(1, self.options.passes):
-            gcode += "G91\nG1 Z-{pass_depth}\nG90\n{gcode_pass}".format(
-                pass_depth=self.options.pass_depth,
-                gcode_pass=gcode_pass)
-            # gcode += "G91\nG1 Z-" + self.options.pass_depth + "\nG90\n" + gcode_pass
+        gcode_later_pass = "G91\nG1 Z-{pass_depth}\nG90\n{gcode}".format(
+            pass_depth=self.options.pass_depth,
+            gcode=gcode_single_pass)
+        # Combine the base gcode (first pass) with later passes
+        gcode = gcode_single_pass + gcode_later_pass * (self.options.passes-1)
         complete_gcode = "{off_cmd} S0\n{header}\nG1 F{travel_speed}\n{gcode}\n{footer}".format(
             off_cmd=self.options.laser_off_command,
             header=self.header,
@@ -576,9 +585,6 @@ class LaserGcode(inkex.Effect):
         )
         with open(self.options.directory / self.options.file, "w") as gcode_file:
             gcode_file.write(complete_gcode)
-            # gcode_file.write(
-            #     self.options.laser_off_command + " S0" + "\n" + self.header +
-            #     "G1 F" + self.options.travel_speed + "\n" + gcode + self.footer)
 
     def add_arguments_old(self):
         add_option = self.OptionParser.add_option
@@ -801,7 +807,7 @@ class LaserGcode(inkex.Effect):
                                            })
             s = si
 
-    def check_dir(self):
+    def check_dir(self) -> bool:
         """
         Validate the given directory for saving the gcode output and perform
         setup.
