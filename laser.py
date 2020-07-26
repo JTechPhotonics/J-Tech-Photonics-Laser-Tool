@@ -896,7 +896,7 @@ class LaserGcode(inkex.Effect):
         save_filename = directory / self.options.file
         print_("Testing writing rights on '{}'".format(save_filename))
         try:
-            with open(save_filename, 'w') as _:
+            with open(save_filename, 'w') as file:
                 pass
         except IOError:
             self.error(_("Can not write to specified file!\n{}".format(save_filename)), "error")
