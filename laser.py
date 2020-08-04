@@ -31,16 +31,16 @@ import math
 import re
 import sys
 import time
+import pathlib
 
 # Inkex imports
 import inkex
 from inkex.transforms import Transform
-from inkex.paths import Path
+from inkex.paths import Path as InkexPath
 from inkex.paths import CubicSuperPath
 from inkex import bezier
 
 # Other libraries shipped with Inkscape
-from pathlib import Path
 import numpy
 from gettext import gettext
 from lxml import etree
@@ -782,8 +782,7 @@ class LaserGcode(inkex.Effect):
             self.error(gettext("No save directory given."), "error")
             return False
 
-        # directory = os.path.abspath(os.path.expanduser(self.options.directory))
-        directory = Path(self.options.directory).expanduser()
+        directory = pathlib.Path(self.options.directory).expanduser()
 
         print_("Checking directory: '{}'".format(directory))
 
@@ -821,7 +820,7 @@ class LaserGcode(inkex.Effect):
             self.header += "G20\n"
 
         if self.options.add_numeric_suffix_to_filename:
-            file = Path(self.options.file)
+            file = pathlib.Path(self.options.file)
             name = file.stem
             ext = file.suffix
 
@@ -830,7 +829,7 @@ class LaserGcode(inkex.Effect):
             # Get the highest file number used so far
             num_length = 4  # Length of numbers in file names (zero-padded)
             # Get the stems (no extensions) of all files that match the format
-            stems = [Path(f).stem for f in all_filenames if re.match(
+            stems = [pathlib.Path(f).stem for f in all_filenames if re.match(
                 r"^%s_0*(\d+)%s$" % (re.escape(name), re.escape(ext)), f)]
             # Extract the regex of the 4-digit number portion of the filename
             file_num_re = [re.search(r"_[0-9]{%s}" % num_length, s) for s in stems]
@@ -947,7 +946,7 @@ class LaserGcode(inkex.Effect):
     def apply_transforms(self, g, csp):
         trans = self.get_transforms(g)
         if trans != []:
-            csp = Path(csp).transform(Transform(trans)).to_superpath()
+            csp = InkexPath(csp).transform(Transform(trans)).to_superpath()
         return csp
 
     def transform(self, source_point, layer, reverse=False):
