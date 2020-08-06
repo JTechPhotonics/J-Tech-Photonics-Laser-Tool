@@ -5,6 +5,8 @@
 	<dependency type="executable" location="extensions">laser.py</dependency>
 	<dependency type="executable" location="extensions">inkex.py</dependency>
 
+	<param name="start-gcode" type="string" _gui-text="Start G-code:"></param>
+	<param name="end-gcode" type="string" _gui-text="End G-code:"></param>	
 	<param name="laser-command" type="string" _gui-text="Laser ON Command:">M03</param>
 	<param name="laser-off-command" type="string" _gui-text="Laser OFF Command:">M05</param>
 	<param name="travel-speed" type="int" min="0" max="15000" _gui-text="Travel Speed (mm/min or in/min):">3000</param>

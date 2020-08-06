@@ -571,9 +571,16 @@ class LaserGcode(inkex.Effect):
         for x in range(1, self.options.passes):
             gcode += "G91\nG1 Z-" + self.options.pass_depth + "\nG90\n" + gcode_pass
         f = open(self.options.directory + self.options.file, "w")
+        
+        if self.options.start_gcode != "":
+            self.options.start_gcode = self.options.start_gcode + "\n"
+        if self.options.end_gcode != "":
+            self.options.end_gcode = self.options.end_gcode + "\n"
+			
         f.write(
             self.options.laser_off_command + " S0" + "\n" + self.header +
-            "G1 F" + self.options.travel_speed + "\n" + gcode + self.footer)
+            "G1 F" + self.options.travel_speed + "\n" + self.options.start_gcode 
+            + gcode + self.options.end_gcode + self.footer)
         f.close()
 
     def add_arguments_old(self):
@@ -612,6 +619,12 @@ class LaserGcode(inkex.Effect):
             {"name": "--add-numeric-suffix-to-filename", "type": inkex.Boolean,
              "dest": "add_numeric_suffix_to_filename", "default": False,
              "help": "Add numeric suffix to file name"},
+
+            {"name": "--start-gcode", "type": str, "dest": "start_gcode",
+             "default": "", "help": "Start G-code command"},
+
+            {"name": "--end-gcode", "type": str, "dest": "end_gcode",
+             "default": "", "help": "End G-code command"},
 
             {"name": "--laser-command", "type": str, "dest": "laser_command",
              "default": "M03", "help": "Laser gcode command"},
