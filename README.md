@@ -1,6 +1,6 @@
 # J Tech Photonics Laser Tool
 
-This is the new official home for the JTP laser cutting Inskape extension.
+This is the new official home for the JTP laser cutting Inkscape extension.
 
 
 ## Installation
