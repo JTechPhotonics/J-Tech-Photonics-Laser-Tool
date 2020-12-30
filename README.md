@@ -16,6 +16,13 @@ Restart Inkscape and you're done.
 
 More documentation coming soon. In the meantime you can refer to [JTP's official website](https://jtechphotonics.com/?page_id=2012).
 
+### Custom G-code Header and Footer
+
+Add "header" and "footer" text files without extensions in your destination directory to add custom commands. Don't forget to add a new line at the end of these two files.
+
+If no files are detected the default values are :
+- Header : G90 ; Absolute positioning
+- Footer : G1 X0 Y0 ; Move to X0 Y0
 
 ## For developers
 
