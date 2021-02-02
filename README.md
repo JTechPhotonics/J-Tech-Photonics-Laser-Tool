@@ -1,30 +1,24 @@
 # J Tech Photonics Laser Tool
+## Wrapper - 2.0 release candidate
 
-This is the new official home for the JTP laser cutting Inkscape extension.
+Previous versions of this extension were based on fairly ancient and unreadable code. The extension is now a wrapper 
+around the new [svg-to-gcode](https://github.com/PadLex/SvgToGcode) library. Legacy version will of course remain 
+available even after this branch is merged with the master branch.
 
 
 ## Installation
 
-Download the latest release [here](https://github.com/JTechPhotonics/J-Tech-Photonics-Laser-Tool/releases). Make sure to select the release targeted towards the version of Inkscape you are using. You can find the version of Inkscape you're using under **Help** > **About**.
+Download the latest beta release [here](https://github.com/JTechPhotonics/J-Tech-Photonics-Laser-Tool/releases).
+Inkscape versions below 1.0 are not supported. Use legacy releases if you are using Inkscape < 1.0.
 
-Unzip the files directly into the Inkscape user extensions folder. Inkscape lists the location of your extensions folder under **Edit** > **Preferences** > **System**.
+Unzip the binaries and copy the laser directly into the Inkscape **user extensions folder**. Inkscape lists the location
+of your user extensions folder under **Edit** > **Preferences** > **System**.
 
 Restart Inkscape and you're done.
 
+## Contribute
 
-## Documentation
-
-More documentation coming soon. In the meantime you can refer to [JTP's official website](https://jtechphotonics.com/?page_id=2012).
-
-### Custom G-code Header and Footer
-
-Add "header" and "footer" text files without extensions in your destination directory to add custom commands. Don't forget to add a new line at the end of these two files.
-
-If no files are detected the default values are :
-- Header : G90 ; Absolute positioning
-- Footer : G1 X0 Y0 ; Move to X0 Y0
-
-## For developers
-
-Pull requests are welcome. Just make sure to test your code on both Python >=2.6 and >=3.5 for the main branch, and Python >= 3.6 for the development branch (In the next major release we'll drop support for older python versions in an effort to improve code readability).
-
+* As a user you can contribute by suggesting features, testing the library and reporting any bugs you encounter in a 
+detailed issue.
+* As a developer of any skill level you can help by looking into bugs and possible feature implementations and making a 
+pull request.

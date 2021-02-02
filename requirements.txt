@@ -1,0 +1,4 @@
+# svg-to-gcode must be packaged with the extension
+svg-to-gcode
+
+# inkex and lxml are provided by Inkscape
