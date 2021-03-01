@@ -1,9 +1,10 @@
 import os
 
 from lxml import etree
+from xml.etree import ElementTree as xml_tree
 from inkex import EffectExtension, Boolean
 
-from svg_to_gcode.svg_parser import parse_root, Transformation
+from svg_to_gcode.svg_parser import parse_root, Transformation, debug_methods
 from svg_to_gcode.geometry import LineSegmentChain
 from svg_to_gcode.compiler import Compiler, interfaces
 from svg_to_gcode.formulas import linear_map
@@ -15,7 +16,7 @@ inkscape_name_space = "http://www.inkscape.org/namespaces/inkscape"
 inx_filename = "laser.inx"
 
 
-def generate_custom_interface(laser_command):
+def generate_custom_interface(laser_command, laser_power_range):
     """Wrapper function for generating a Gcode interface with a custom laser power command"""
     class CustomInterface(interfaces.Gcode):
         """A Gcode interface with a custom laser power command"""
@@ -37,7 +38,7 @@ def generate_custom_interface(laser_command):
                 raise ValueError(f"{power} is out of bounds. Laser power must be given between 0 and 1. "
                                  f"The interface will scale it correctly.")
 
-            return f"{self.laser_command} S{linear_map(0, 255, power)};"
+            return f"{self.laser_command} S{linear_map(0, laser_power_range, power)};"
 
     return CustomInterface
 
@@ -53,11 +54,12 @@ class GcodeExtension(EffectExtension):
         # Variable declarations
         root = self.document.getroot()
         laser_command = self.options.laser_command
+        laser_power_range = int(self.options.laser_power_range)
         movement_speed = self.options.travel_speed
         cutting_speed = self.options.cutting_speed
         pass_depth = self.options.pass_depth
         passes = self.options.passes
-        approximation_tolerance = self.options.approximation_tolerance
+        approximation_tolerance_string = self.options.approximation_tolerance
         unit = self.options.unit
         origin = self.options.machine_origin
         bed_width = self.options.bed_width
@@ -65,6 +67,9 @@ class GcodeExtension(EffectExtension):
         horizontal_offset = self.options.horizontal_offset
         vertical_offset = self.options.vertical_offset
         scaling_factor = self.options.scaling_factor
+        draw_debug = self.options.draw_debug
+
+        approximation_tolerance = float(approximation_tolerance_string.replace(',', '.'))
 
         output_path = os.path.join(self.options.directory, self.options.filename)
         if self.options.filename_suffix:
@@ -89,7 +94,7 @@ class GcodeExtension(EffectExtension):
         self.clear_debug()
 
         TOLERANCES["approximation"] = approximation_tolerance
-        custom_interface = generate_custom_interface(laser_command)
+        custom_interface = generate_custom_interface(laser_command, laser_power_range)
 
         gcode_compiler = Compiler(custom_interface, movement_speed, cutting_speed, pass_depth, custom_header=header,
                                   custom_footer=footer, unit=unit)
@@ -112,8 +117,9 @@ class GcodeExtension(EffectExtension):
         gcode_compiler.compile_to_file(output_path, passes=passes)
 
         # Generate debug lines
-        self.draw_debug_traces(curves)
-        self.draw_unit_reference()
+        if draw_debug:
+            self.draw_debug_traces(curves)
+            self.draw_unit_reference()
 
         return self.document
 
@@ -133,24 +139,7 @@ class GcodeExtension(EffectExtension):
         group.set("{%s}groupmode" % inkscape_name_space, "layer")
         group.set("{%s}label" % inkscape_name_space, "debug laser traces")
 
-        # define marker
-        defs = etree.Element("{%s}defs" % svg_name_space)
-        group.append(defs)
-
-        marker = etree.Element("{%s}marker" % svg_name_space)
-        marker.set("id", "arrow-346")
-        marker.set("viewBox", "0 0 10 10")
-        marker.set("refX", "5")
-        marker.set("refY", "5")
-        marker.set("markerWidth", "1")
-        marker.set("markerHeight", "1")
-        marker.set("orient", "auto-start-reverse")
-        defs.append(marker)
-
-        arrow = etree.Element("{%s}path" % svg_name_space)
-        arrow.set("d", "M 5 0 l 10 5 l -10 5 z")
-        arrow.set("fill", "yellow")
-        marker.append(arrow)
+        group.append(etree.fromstring(xml_tree.tostring(debug_methods.arrow_defs())))
 
         for curve in curves:
             approximation = LineSegmentChain.line_segment_approximation(curve)
@@ -164,14 +153,10 @@ class GcodeExtension(EffectExtension):
             if origin == "center":
                 change_origin.add_translation(bed_width / 2, bed_height / 2)
 
-            path = etree.Element("{%s}path" % svg_name_space)
-            path.set("d", approximation.to_svg_path(wrapped=False, transformation=change_origin))
-            path.set("fill", "none")
-            path.set("stroke", "red")
-            path.set("stroke-width", f"0.5")
-            path.set("marker-mid", "url(#arrow-346)")
+            path_string = xml_tree.tostring(debug_methods.to_svg_path(approximation, color="red", stroke_width=f"0.5",
+                                             transformation=change_origin, draw_arrows=True))
 
-            group.append(path)
+            group.append(etree.fromstring(path_string))
 
         root.append(group)
 

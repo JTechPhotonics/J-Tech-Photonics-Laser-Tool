@@ -13,8 +13,10 @@
 			</param>
 			<param name="travel_speed" type="float" min="0" max="999999" _gui-text="Travel Speed (unit/min):">3000</param>
 			<param name="cutting_speed" type="float" min="0" max="999999" _gui-text="Cutting Speed (unit/min):">750</param>
+			<spacer></spacer>
 			<param name="passes" type="int" min="1" max="100" _gui-text="Passes:">1</param>
 			<param name="pass_depth" type="float" min="0" max="10" _gui-text="Pass Depth (unit):">1</param>
+			<spacer></spacer>
 			<param name="directory" type="string" _gui-text="Output Directory:"></param>
 			<param name="filename" type="string" _gui-text="Filename:">output.gcode</param>
 		</page>
@@ -27,9 +29,11 @@
 			<spacer></spacer>
 			<param name="header_path" type="string" _gui-text="Custom G-code Header Filepath:"></param>
 			<param name="footer_path" type="string" _gui-text="Custom G-code Footer Filepath:"></param>
-			<param name="filename_suffix" type="boolean" _gui-text="Add Numeric Suffix to Filename">true</param>
+			<param name="filename_suffix" type="boolean" _gui-text="Add Numeric Suffix to Filename:">true</param>
 			<spacer></spacer>
-			<param name="approximation_tolerance" type="float" min="0" max="2" _gui-text="Approximation Tolerance (+-unit):">0.1</param>
+			<param name="draw_debug" type="boolean" _gui-text="Draw Debug:">true</param>
+			<spacer></spacer>
+			<param name="approximation_tolerance" type="string" appearance="full" _gui-text="Approximation Tolerance (+-unit) [tip, stay between 10^-4 and 1]:">0.01</param>
 		</page>
 		<page name="scaling" gui-text="Coordinate System and Transformations">
 			<param name="machine_origin" type="enum" _gui-text="Machine Origin:">
