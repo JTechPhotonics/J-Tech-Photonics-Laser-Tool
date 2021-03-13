@@ -15,7 +15,7 @@
 			<param name="cutting_speed" type="float" min="0" max="999999" _gui-text="Cutting Speed (unit/min):">750</param>
 			<param name="passes" type="int" min="1" max="100" _gui-text="Passes:">1</param>
 			<param name="pass_depth" type="float" min="0" max="10" _gui-text="Pass Depth (unit):">1</param>
-			<param name="directory" type="string" _gui-text="Output Directory:"></param>
+			<param name="directory" type="path" _gui-text="Output Directory:" mode="folder">-- Choose Output Directory --</param>
 			<param name="filename" type="string" _gui-text="Filename:">output.gcode</param>
 		</page>
 		<page name="advanced_settings" gui-text="Advanced Settings">
