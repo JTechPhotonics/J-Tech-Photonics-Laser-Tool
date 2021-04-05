@@ -1,52 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
     <_name>J Tech Community Laser Tool</_name>
-    <id>jtechphotonics.com</id>
+    <id>community.jtechphotonics.com</id>
 	<dependency type="executable" location="inx">laser.py</dependency>
 	<dependency type="executable" location="extensions">inkex.py</dependency>
 
 	<param name="tabs" type="notebook">
 		<page name="important_settings" gui-text="Important Settings">
-			<param name="unit" type="enum" _gui-text="Unit of measurement:">
+			<param name="unit" type="enum" _gui-text="Unit Of Measurement">
 				<item value="mm">millimeters</item>
 				<item value="in">inches</item>
 			</param>
-			<param name="travel_speed" type="float" min="0" max="999999" _gui-text="Travel Speed (unit/min):">3000</param>
-			<param name="cutting_speed" type="float" min="0" max="999999" _gui-text="Cutting Speed (unit/min):">750</param>
+			<param name="travel_speed" type="float" min="0" _gui-text="Travel Speed (unit/min)">3000</param>
+			<param name="cutting_speed" type="float" min="0" _gui-text="Cutting Speed (unit/min)">750</param>
 			<spacer></spacer>
-			<param name="passes" type="int" min="1" max="100" _gui-text="Passes:">1</param>
-			<param name="pass_depth" type="float" min="0" max="10" _gui-text="Pass Depth (unit):">1</param>
+			<param name="passes" type="int" min="1" _gui-text="Passes">1</param>
+			<param name="pass_depth" type="float" min="0" _gui-text="Pass Depth (unit)">1</param>
 			<spacer></spacer>
-			<param name="directory" type="path" _gui-text="Output Directory:" mode="folder">-- Choose Output Directory --</param>
-			<param name="filename" type="string" _gui-text="Filename:">output.gcode</param>
+			<param name="directory" type="path" _gui-text="Output Directory" mode="folder">-- Choose Output Directory --</param>
+			<param name="filename" type="string" _gui-text="Filename">output.gcode</param>
 		</page>
+
 		<page name="advanced_settings" gui-text="Advanced Settings">
-			<param name="laser_command" type="string" _gui-text="Laser Power Command:">M3</param>
-			<param name="laser_power_range" type="enum" _gui-text="Laser Power Range:">
+			<param name="laser_power_command" type="string" _gui-text="Laser Power Command">M3</param>
+			<param name="laser_off_command" type="string" _gui-text="Laser Off Command">M5</param>
+			<param name="dwell_time" type="float" _gui-text="Dwell Time Before Moving (ms)">0</param>
+			<param name="laser_power_range" type="enum" _gui-text="Laser Power Range">
 				<item value="255">0-255</item>
 				<item value="12000">0-12000</item>
 			</param>
 			<spacer></spacer>
-			<param name="header_path" type="string" _gui-text="Custom G-code Header Filepath:"></param>
-			<param name="footer_path" type="string" _gui-text="Custom G-code Footer Filepath:"></param>
-			<param name="filename_suffix" type="boolean" _gui-text="Add Numeric Suffix to Filename:">true</param>
+			<param name="header_path" type="string" _gui-text="Custom G-code Header Filepath"></param>
+			<param name="footer_path" type="string" _gui-text="Custom G-code Footer Filepath"></param>
+			<param name="filename_suffix" type="boolean" _gui-text="Add Numeric Suffix to Filename">true</param>
 			<spacer></spacer>
-			<param name="draw_debug" type="boolean" _gui-text="Draw Debug:">true</param>
+			<param name="draw_debug" type="boolean" _gui-text="Draw Debug">true</param>
+			<param name="debug_line_width" type="float" _gui-text="Debug Line Width (px)">0.5</param>
+			<param name="debug_arrow_scale" type="float" min="0" _gui-text="Debug Arrow Scale">1.0</param>
 			<spacer></spacer>
-			<param name="approximation_tolerance" type="string" appearance="full" _gui-text="Approximation Tolerance (+-unit) [tip, stay between 10^-4 and 1]:">0.01</param>
+			<param name="approximation_tolerance" type="string" appearance="full" _gui-text="Approximation Tolerance (+-unit) [tip, stay between 10^-4 and 1]">0.01</param>
 		</page>
+
 		<page name="scaling" gui-text="Coordinate System and Transformations">
-			<param name="machine_origin" type="enum" _gui-text="Machine Origin:">
+			<param name="machine_origin" type="enum" _gui-text="Machine Origin">
 				<item value="bottom-left">bottom-left</item>
 				<item value="center">center</item>
 				<item value="top-left">top-left</item>
 			</param>
-			<param name="bed_width" type="float" min="-999999" max="999999" _gui-text="Bed Width (unit):">200</param>
-			<param name="bed_height" type="float" min="-999999" max="999999" _gui-text="Bed Height (unit):">200</param>
+			<param name="bed_width" type="float" _gui-text="Bed Width (unit)">200</param>
+			<param name="bed_height" type="float" _gui-text="Bed Height (unit)">200</param>
 			<spacer></spacer>
-			<param name="horizontal_offset" type="float" min="-999999" max="999999" _gui-text="Gcode Horizontal Offset (unit):">0</param>
-			<param name="vertical_offset" type="float" min="-999999" max="999999" _gui-text="Gcode Vertical Offset (unit):">0</param>
-			<param name="scaling_factor" type="float" min="0" max="999999" _gui-text="Gcode Scaling Factor:">1</param>
+			<param name="horizontal_offset" type="float" _gui-text="Gcode Horizontal Offset (unit)">0</param>
+			<param name="vertical_offset" type="float" _gui-text="Gcode Vertical Offset (unit)">0</param>
+			<param name="scaling_factor" type="float" min="0" _gui-text="Gcode Scaling Factor">1</param>
 		</page>
 	</param>
 

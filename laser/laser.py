@@ -16,54 +16,40 @@ inkscape_name_space = "http://www.inkscape.org/namespaces/inkscape"
 inx_filename = "laser.inx"
 
 
-def generate_custom_interface(laser_command, laser_power_range):
+def generate_custom_interface(laser_off_command, laser_power_command, laser_power_range):
     """Wrapper function for generating a Gcode interface with a custom laser power command"""
+
     class CustomInterface(interfaces.Gcode):
         """A Gcode interface with a custom laser power command"""
+
         def __init__(self):
-            self.laser_command = laser_command
             super().__init__()
 
         def laser_off(self):
-            return self.set_laser_power(0)
+            return f"{laser_off_command};"
 
         def set_laser_power(self, power):
             if power < 0 or power > 1:
                 raise ValueError(f"{power} is out of bounds. Laser power must be given between 0 and 1. "
                                  f"The interface will scale it correctly.")
 
-            return f"{self.laser_command} S{linear_map(0, laser_power_range, power)};"
+            return f"{laser_power_command} S{linear_map(0, int(laser_power_range), power)};"
 
     return CustomInterface
 
 
 class GcodeExtension(EffectExtension):
     """Inkscape Effect Extension."""
+
     def __init__(self):
         EffectExtension.__init__(self)
 
     def effect(self):
         """Takes the SVG from Inkscape, generates gcode, returns the SVG after adding debug lines."""
 
-        # Variable declarations
         root = self.document.getroot()
-        laser_command = self.options.laser_command
-        laser_power_range = int(self.options.laser_power_range)
-        movement_speed = self.options.travel_speed
-        cutting_speed = self.options.cutting_speed
-        pass_depth = self.options.pass_depth
-        passes = self.options.passes
-        approximation_tolerance_string = self.options.approximation_tolerance
-        unit = self.options.unit
-        origin = self.options.machine_origin
-        bed_width = self.options.bed_width
-        bed_height = self.options.bed_height
-        horizontal_offset = self.options.horizontal_offset
-        vertical_offset = self.options.vertical_offset
-        scaling_factor = self.options.scaling_factor
-        draw_debug = self.options.draw_debug
 
-        approximation_tolerance = float(approximation_tolerance_string.replace(',', '.'))
+        approximation_tolerance = float(self.options.approximation_tolerance.replace(',', '.'))
 
         output_path = os.path.join(self.options.directory, self.options.filename)
         if self.options.filename_suffix:
@@ -88,30 +74,32 @@ class GcodeExtension(EffectExtension):
         self.clear_debug()
 
         TOLERANCES["approximation"] = approximation_tolerance
-        custom_interface = generate_custom_interface(laser_command, laser_power_range)
+        custom_interface = generate_custom_interface(self.options.laser_off_command, self.options.laser_power_command,
+                                                     self.options.laser_power_range)
 
-        gcode_compiler = Compiler(custom_interface, movement_speed, cutting_speed, pass_depth, custom_header=header,
-                                  custom_footer=footer, unit=unit)
+        gcode_compiler = Compiler(custom_interface, self.options.travel_speed, self.options.cutting_speed,
+                                  self.options.pass_depth, dwell_time=self.options.dwell_time, custom_header=header,
+                                  custom_footer=footer, unit=self.options.unit)
 
         transformation = Transformation()
 
-        transformation.add_translation(horizontal_offset, vertical_offset)
-        transformation.add_scale(scaling_factor)
+        transformation.add_translation(self.options.horizontal_offset, self.options.vertical_offset)
+        transformation.add_scale(self.options.scaling_factor)
 
-        if origin == "center":
-            transformation.add_translation(-bed_width / 2, bed_height / 2)
+        if self.options.machine_origin == "center":
+            transformation.add_translation(-self.options.bed_width / 2, self.options.bed_height / 2)
 
         transform_origin = True
-        if origin == "top-left":
+        if self.options.machine_origin == "top-left":
             transform_origin = False
 
         curves = parse_root(root, transform_origin=transform_origin, root_transformation=transformation)
 
         gcode_compiler.append_curves(curves)
-        gcode_compiler.compile_to_file(output_path, passes=passes)
+        gcode_compiler.compile_to_file(output_path, passes=self.options.passes)
 
         # Generate debug lines
-        if draw_debug:
+        if self.options.draw_debug:
             self.draw_debug_traces(curves)
             self.draw_unit_reference()
 
@@ -133,7 +121,8 @@ class GcodeExtension(EffectExtension):
         group.set("{%s}groupmode" % inkscape_name_space, "layer")
         group.set("{%s}label" % inkscape_name_space, "debug laser traces")
 
-        group.append(etree.fromstring(xml_tree.tostring(debug_methods.arrow_defs())))
+        group.append(
+            etree.fromstring(xml_tree.tostring(debug_methods.arrow_defs(arrow_scale=self.options.debug_arrow_scale))))
 
         for curve in curves:
             approximation = LineSegmentChain.line_segment_approximation(curve)
@@ -147,8 +136,10 @@ class GcodeExtension(EffectExtension):
             if origin == "center":
                 change_origin.add_translation(bed_width / 2, bed_height / 2)
 
-            path_string = xml_tree.tostring(debug_methods.to_svg_path(approximation, color="red", stroke_width=f"0.5",
-                                             transformation=change_origin, draw_arrows=True))
+            path_string = xml_tree.tostring(
+                debug_methods.to_svg_path(approximation, color="red", stroke_width=f"{self.options.debug_line_width}px",
+                                          transformation=change_origin, draw_arrows=True)
+            )
 
             group.append(etree.fromstring(path_string))
 
@@ -171,11 +162,11 @@ class GcodeExtension(EffectExtension):
         reference_points_gcode = {
             "bottom-left": [(0, bed_height), (0, 0), (bed_width, bed_height), (bed_width, 0)],
             "top-left": [(0, 0), (0, bed_height), (bed_width, 0), (bed_width, bed_height)],
-            "center": [(-bed_width/2, bed_height/2), (-bed_width/2, -bed_height/2), (bed_width/2, bed_height/2),
-                       (bed_width/2, -bed_height/2)]
+            "center": [(-bed_width / 2, bed_height / 2), (-bed_width / 2, -bed_height / 2),
+                       (bed_width / 2, bed_height / 2),
+                       (bed_width / 2, -bed_height / 2)]
         }[origin]
         for i, (x, y) in enumerate(reference_points_svg):
-
             reference_point = etree.Element("{%s}g" % svg_name_space)
 
             stroke_width = 2
@@ -184,7 +175,7 @@ class GcodeExtension(EffectExtension):
             x_direction = -1 if x > 0 else 1
             plus_sign = etree.Element("{%s}g" % svg_name_space)
             horizontal = etree.Element("{%s}line" % svg_name_space)
-            horizontal.set("x1", str(x - x_direction * stroke_width/2))
+            horizontal.set("x1", str(x - x_direction * stroke_width / 2))
             horizontal.set("y1", str(y))
             horizontal.set("x2", str(x + x_direction * size))
             horizontal.set("y2", str(y))
@@ -194,7 +185,7 @@ class GcodeExtension(EffectExtension):
             y_direction = -1 if y > 0 else 1
             vertical = etree.Element("{%s}line" % svg_name_space)
             vertical.set("x1", str(x))
-            vertical.set("y1", str(y + stroke_width/2))
+            vertical.set("y1", str(y + stroke_width / 2))
             vertical.set("x2", str(x))
             vertical.set("y2", str(y + y_direction * size))
             vertical.set("style", f"stroke:black;stroke-width:{stroke_width}")
