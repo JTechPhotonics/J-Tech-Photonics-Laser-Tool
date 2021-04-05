@@ -25,15 +25,9 @@ def generate_custom_interface(laser_command, laser_power_range):
             super().__init__()
 
         def laser_off(self):
-            if self._current_power is None or self._current_power > 0:
-                self._current_power = 0
-                return self.set_laser_power(0)
-
-            return ''
+            return self.set_laser_power(0)
 
         def set_laser_power(self, power):
-            self._current_power = power
-
             if power < 0 or power > 1:
                 raise ValueError(f"{power} is out of bounds. Laser power must be given between 0 and 1. "
                                  f"The interface will scale it correctly.")

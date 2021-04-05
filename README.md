@@ -16,9 +16,12 @@ of your user extensions folder under **Edit** > **Preferences** > **System**.
 
 Restart Inkscape and you're done.
 
+## Tutorial
+### Basic Usage
+
+
 ## Contribute
 
 * As a user you can contribute by suggesting features, testing the library and reporting any bugs you encounter in a 
 detailed issue.
-* As a developer of any skill level you can help by looking into bugs and possible feature implementations and making a 
-pull request.
+* As a developer of any skill level you can make pull requests which close issues or introdce usefull features.
