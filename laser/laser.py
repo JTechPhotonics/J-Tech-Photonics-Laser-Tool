@@ -12,6 +12,7 @@ from svg_to_gcode import TOLERANCES
 
 svg_name_space = "http://www.w3.org/2000/svg"
 inkscape_name_space = "http://www.inkscape.org/namespaces/inkscape"
+sodipodi_name_space = "http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
 
 inx_filename = "laser.inx"
 
@@ -102,6 +103,7 @@ class GcodeExtension(EffectExtension):
         if self.options.draw_debug:
             self.draw_debug_traces(curves)
             self.draw_unit_reference()
+            self.select_non_debug_layer()
 
         return self.document
 
@@ -119,7 +121,7 @@ class GcodeExtension(EffectExtension):
         group = etree.Element("{%s}g" % svg_name_space)
         group.set("id", "debug_traces")
         group.set("{%s}groupmode" % inkscape_name_space, "layer")
-        group.set("{%s}label" % inkscape_name_space, "debug laser traces")
+        group.set("{%s}label" % inkscape_name_space, "debug traces")
 
         group.append(
             etree.fromstring(xml_tree.tostring(debug_methods.arrow_defs(arrow_scale=self.options.debug_arrow_scale))))
@@ -203,6 +205,29 @@ class GcodeExtension(EffectExtension):
             group.append(reference_point)
 
         root.append(group)
+
+    def select_non_debug_layer(self):
+        """
+        Select content_layer and create one if it doesn't exist. This helps stop the user from accidentally placing new
+        objects in debug layers.
+        """
+
+        root = self.document.getroot()
+
+        unique_id = "layer89324"
+        content_layer = root.find("{%s}g[@id='%s']" % (svg_name_space, unique_id))
+
+        if content_layer is None:
+            content_layer = etree.Element("{%s}g" % svg_name_space)
+            content_layer.set("id", unique_id)
+            content_layer.set("{%s}groupmode" % inkscape_name_space, "layer")
+            content_layer.set("{%s}label" % inkscape_name_space, "content layer")
+
+        sodipodi = root.find("{%s}namedview" % sodipodi_name_space)
+        if sodipodi is not None:
+            sodipodi.set("{%s}current-layer" % inkscape_name_space, unique_id)
+
+        root.append(content_layer)
 
     def clear_debug(self):
         """Removes debug groups. Used before parsing paths for gcode."""

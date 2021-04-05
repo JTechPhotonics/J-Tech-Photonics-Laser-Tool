@@ -7,7 +7,7 @@
 
 	<param name="tabs" type="notebook">
 		<page name="important_settings" gui-text="Important Settings">
-			<param name="unit" type="enum" _gui-text="Unit Of Measurement">
+			<param name="unit" type="enum" _gui-text="Unit of Measurement">
 				<item value="mm">millimeters</item>
 				<item value="in">inches</item>
 			</param>
