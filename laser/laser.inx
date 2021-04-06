@@ -11,11 +11,11 @@
 				<item value="mm">millimeters</item>
 				<item value="in">inches</item>
 			</param>
-			<param name="travel_speed" type="float" min="0" _gui-text="Travel Speed (unit/min)">3000</param>
-			<param name="cutting_speed" type="float" min="0" _gui-text="Cutting Speed (unit/min)">750</param>
+			<param name="travel_speed" type="float" min="0" max="999999" _gui-text="Travel Speed (unit/min)">3000</param>
+			<param name="cutting_speed" type="float" min="0" max="999999" _gui-text="Cutting Speed (unit/min)">750</param>
 			<spacer></spacer>
-			<param name="passes" type="int" min="1" _gui-text="Passes">1</param>
-			<param name="pass_depth" type="float" min="0" _gui-text="Pass Depth (unit)">1</param>
+			<param name="passes" type="int" min="1" max="999999" _gui-text="Passes">1</param>
+			<param name="pass_depth" type="float" min="0" max="999999" _gui-text="Pass Depth (unit)">1</param>
 			<spacer></spacer>
 			<param name="directory" type="path" _gui-text="Output Directory" mode="folder">-- Choose Output Directory --</param>
 			<param name="filename" type="string" _gui-text="Filename">output.gcode</param>
@@ -47,12 +47,12 @@
 				<item value="center">center</item>
 				<item value="top-left">top-left</item>
 			</param>
-			<param name="bed_width" type="float" _gui-text="Bed Width (unit)">200</param>
-			<param name="bed_height" type="float" _gui-text="Bed Height (unit)">200</param>
+			<param name="bed_width" type="float" min="0" max="999999" _gui-text="Bed Width (unit)">200</param>
+			<param name="bed_height" type="float" min="0" max="999999" _gui-text="Bed Height (unit)">200</param>
 			<spacer></spacer>
-			<param name="horizontal_offset" type="float" _gui-text="Gcode Horizontal Offset (unit)">0</param>
-			<param name="vertical_offset" type="float" _gui-text="Gcode Vertical Offset (unit)">0</param>
-			<param name="scaling_factor" type="float" min="0" _gui-text="Gcode Scaling Factor">1</param>
+			<param name="horizontal_offset" type="float" min="0" max="999999" _gui-text="Gcode Horizontal Offset (unit)">0</param>
+			<param name="vertical_offset" type="float" min="0" max="999999" _gui-text="Gcode Vertical Offset (unit)">0</param>
+			<param name="scaling_factor" type="float" min="0" max="999999" _gui-text="Gcode Scaling Factor">1</param>
 		</page>
 	</param>
 
