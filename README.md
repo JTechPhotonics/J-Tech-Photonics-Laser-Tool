@@ -22,8 +22,6 @@ Restart Inkscape and you're done.
 ### Document Setup
 Before using the extension, we need to make sure the document is setup correctly. Open **File** > **Document Properties**.
 
-<img src="./images/document_setup_open.png" alt="document_setup_open.png" width="600" />
-
 Set the document's **unit** to `mm` or `in`.
 Then set **Scale x**, **Scale y** to `1` and **Viewbox > X**, **Viewbox > Y** to `0`.
 
@@ -37,17 +35,19 @@ This extension will parse all svg paths and ignore everything else. So step 1 is
 In this case I want to convert the whole drawing to gcode. So I select everything `ctr+A` and convert the drawing to paths 
 **Path** > **Object to Path**.
 
-<img src="./images/basic_usage_open_extension.png" alt="basic_usage_open_extension.png" width="600" />
+Open the extension at **Extension** > **Generate Laser Gcode** > **J Tech Community Laser Tool**
 
 Select the **same unit** you used in the **Document Settings**. Then choose an appropriate output directory and 
 hit apply.
 
 <img src="./images/important_settings.png" alt="important_settings.png" width="600" />
 
-You'll notice two layers where added to your document. `debug reference points` contains the black corners. You can use 
-them to eyeball weather the gcode is scaled and place correctly. `debug traces` contains the red paths which trace all 
-generated gcode commands. Note: debug layer are reset everytime you run the extension, so make sure you don't 
-accidentally add any objects to them.
+You'll notice two layers where added to your document:
+* `debug reference points` contains the black corners. They 
+represent the four corners of your machine's bed. You can use them to eyeball weather the gcode is scaled and place 
+correctly.
+* `debug traces` contains the red paths which trace all generated gcode commands. Note: debug layer are reset 
+everytime you run the extension, so make sure you don't accidentally add any objects to them.
 
 ## Contribute
 
