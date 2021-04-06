@@ -1,9 +1,8 @@
 # J Tech Photonics Laser Tool
 This Inkscape extension generates a gcode file using all svg paths. All other shapes are ignored.
 
-Previous versions of this extension were based on fairly ancient and unreadable code. In versions 2.0 and beyond, this 
-extension has become a wrapper around the new [svg-to-gcode](https://github.com/PadLex/SvgToGcode) library. 
-Legacy releases (below 2.0) are available on the [releases page](https://github.com/JTechPhotonics/J-Tech-Photonics-Laser-Tool/releases).
+Version 2.0 just released and there are a lot of changes! If you want you can still access legacy releases (below 2.0) 
+ on the [releases page](https://github.com/JTechPhotonics/J-Tech-Photonics-Laser-Tool/releases).
 Instructions for older versions can be found on [JTP's website](https://jtechphotonics.com/?page_id=2012).
 
 
@@ -22,7 +21,7 @@ Restart Inkscape and you're done.
 ### Document Setup
 Before using the extension, we need to make sure the document is setup correctly. Open **File** > **Document Properties**.
 
-Set the document's **unit** to `mm` or `in`.
+Set the document's **display units** to `mm` or `in`.
 Then set **Scale x**, **Scale y** to `1` and **Viewbox > X**, **Viewbox > Y** to `0`.
 
 <img src="./images/document_setup_properties.png" alt="document_setup_properties.png" width="600" />
