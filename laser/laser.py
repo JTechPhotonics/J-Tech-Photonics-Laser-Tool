@@ -90,11 +90,8 @@ class GcodeExtension(EffectExtension):
         if self.options.machine_origin == "center":
             transformation.add_translation(-self.options.bed_width / 2, self.options.bed_height / 2)
 
-        transform_origin = True
-        if self.options.machine_origin == "top-left":
-            transform_origin = False
-
-        curves = parse_root(root, transform_origin=transform_origin, root_transformation=transformation)
+        curves = parse_root(root, transform_origin=not self.options.invert_y_axis, root_transformation=transformation,
+                            canvas_height=self.options.bed_height)
 
         gcode_compiler.append_curves(curves)
         gcode_compiler.compile_to_file(output_path, passes=self.options.passes)
@@ -115,9 +112,6 @@ class GcodeExtension(EffectExtension):
         bed_width = self.options.bed_width
         bed_height = self.options.bed_height
 
-        height_str = root.get("height")
-        canvas_height = float(height_str) if height_str.isnumeric() else float(height_str[:-2])
-
         group = etree.Element("{%s}g" % svg_name_space)
         group.set("id", "debug_traces")
         group.set("{%s}groupmode" % inkscape_name_space, "layer")
@@ -131,15 +125,17 @@ class GcodeExtension(EffectExtension):
 
             change_origin = Transformation()
 
-            if origin != "top-left":
+            if not self.options.invert_y_axis:
                 change_origin.add_scale(1, -1)
-                change_origin.add_translation(0, -canvas_height)
+                change_origin.add_translation(0, -bed_height)
 
             if origin == "center":
                 change_origin.add_translation(bed_width / 2, bed_height / 2)
 
+
+
             path_string = xml_tree.tostring(
-                debug_methods.to_svg_path(approximation, color="red", stroke_width=f"{self.options.debug_line_width}px",
+                debug_methods.to_svg_path(approximation, color="red", opacity="0.5", stroke_width=f"{self.options.debug_line_width}px",
                                           transformation=change_origin, draw_arrows=True)
             )
 
