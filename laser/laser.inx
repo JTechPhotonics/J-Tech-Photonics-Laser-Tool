@@ -30,8 +30,8 @@
 				<item value="12000">0-12000</item>
 			</param>
 			<spacer></spacer>
-			<param name="header_path" type="string" _gui-text="Custom G-code Header Filepath"></param>
-			<param name="footer_path" type="string" _gui-text="Custom G-code Footer Filepath"></param>
+			<param name="header_path" type="path" mode="file" _gui-text="Custom G-code Header Filepath"></param>
+			<param name="footer_path" type="path" mode="file" _gui-text="Custom G-code Footer Filepath"></param>
 			<param name="filename_suffix" type="boolean" _gui-text="Add Numeric Suffix to Filename">true</param>
 			<spacer></spacer>
 			<param name="draw_debug" type="boolean" _gui-text="Draw Debug">true</param>
