@@ -1,10 +1,13 @@
 # J Tech Photonics Laser Tool
-This Inkscape extension generates a gcode file using all svg paths. All other shapes are ignored.
+This Inkscape extension generates gcode for laser cutters and plotting machines from an SVG file.
 
 Version 2.0 just released and there are a lot of changes! If you want you can still access legacy releases (below 2.0) 
  on the [releases page](https://github.com/JTechPhotonics/J-Tech-Photonics-Laser-Tool/releases).
 Instructions for older versions can be found on [JTP's website](https://jtechphotonics.com/?page_id=2012).
 
+This extension is essentially a UI wrapped around the [svg_to_gcode](https://github.com/PadLex/SvgToGcode) library. 
+So if you want to learn how an Inkscape extension is structured, look no further.
+If you're interested in peeking under the hood, check out svg_to_gcode.
 
 ## Installation
 
@@ -45,11 +48,15 @@ You'll notice two layers where added to your document:
 * `debug reference points` contains the black corners. They 
 represent the four corners of your machine's bed. You can use them to eyeball weather the gcode is scaled and place 
 correctly.
-* `debug traces` contains the red paths which trace all generated gcode commands. Note: debug layer are reset 
-everytime you run the extension, so make sure you don't accidentally add any objects to them.
+* `debug traces` contains the red paths which trace all generated gcode commands.
+
+Note: debug layers are reset everytime you run the extension. So make sure you don't accidentally add any objects to them 
+or they will be deleted.
 
 ## Contribute
 
 * As a user you can contribute by suggesting features, testing the library and reporting any bugs you encounter in a 
 detailed issue.
-* As a developer of any skill level you can make pull requests which close issues or introdce usefull features.
+* As a developer of any skill level you can make pull requests which close issues or introdce usefull features. 
+Just make sure to create an issue describimg what features you want to add before taking the time to implement them. 
+Working on something just to not have it introduced sucks.
