@@ -48,11 +48,11 @@
 				<item value="top-left">top-left</item>
 			</param>
 			<param name="invert_y_axis" type="boolean" _gui-text="Invert Y-Axis">false</param>
-			<param name="bed_width" type="float" min="0" max="999999" _gui-text="Bed Width (unit)">200</param>
-			<param name="bed_height" type="float" min="0" max="999999" _gui-text="Bed Height (unit)">200</param>
+			<param name="bed_width" type="float" min="0" max="999999" _gui-text="Bed X Width (unit)">200</param>
+			<param name="bed_height" type="float" min="0" max="999999" _gui-text="Bed Y Length (unit)">200</param>
 			<spacer></spacer>
-			<param name="horizontal_offset" type="float" min="0" max="999999" _gui-text="Gcode Horizontal Offset (unit)">0</param>
-			<param name="vertical_offset" type="float" min="0" max="999999" _gui-text="Gcode Vertical Offset (unit)">0</param>
+			<param name="horizontal_offset" type="float" min="0" max="999999" _gui-text="Gcode X Offset (unit)">0</param>
+			<param name="vertical_offset" type="float" min="0" max="999999" _gui-text="Gcode Y Offset (unit)">0</param>
 			<param name="scaling_factor" type="float" min="0" max="999999" _gui-text="Gcode Scaling Factor">1</param>
 		</page>
 	</param>
