@@ -66,10 +66,10 @@ class GcodeExtension(EffectExtension):
             with open(self.options.header_path, 'r') as header_file:
                 header = header_file.read().splitlines()
 
-        footer = None
+        footer = [self.options.laser_off_command]
         if os.path.isfile(self.options.footer_path):
             with open(self.options.footer_path, 'r') as footer_file:
-                footer = footer_file.read().splitlines()
+                footer.extend(footer_file.read().splitlines())
 
         # Generate gcode
         self.clear_debug()
