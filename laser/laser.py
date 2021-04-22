@@ -62,14 +62,18 @@ class GcodeExtension(EffectExtension):
                 n += 1
 
         header = None
-        if self.options.header_path:
+        if os.path.isfile(self.options.header_path):
             with open(self.options.header_path, 'r') as header_file:
                 header = header_file.read().splitlines()
+        else:
+            self.debug(f"Header file does not exist at {self.options.header_path}")
 
         footer = None
-        if self.options.footer_path:
+        if os.path.isfile(self.options.footer_path):
             with open(self.options.footer_path, 'r') as footer_file:
                 footer = footer_file.read().splitlines()
+        else:
+            self.debug(f"Footer file does not exist at {self.options.footer_path}")
 
         # Generate gcode
         self.clear_debug()
