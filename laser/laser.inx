@@ -39,6 +39,10 @@
 			<param name="debug_arrow_scale" type="float" min="0" _gui-text="Debug Arrow Scale">1.0</param>
 			<spacer></spacer>
 			<param name="approximation_tolerance" type="string" appearance="full" _gui-text="Approximation Tolerance (+-unit) [tip, stay between 10^-4 and 1]">0.01</param>
+			<spacer></spacer>
+			<param name="set_z_axis_start_pos" type="boolean" _gui-text="Set Z-Axis start Position">false</param>
+			<param name="z_axis_start" type="float" _gui-text="Z-Axis start Position">0</param>
+			<param name="move_to_zero_at_end" type="boolean" _gui-text="Move to Zero position when done">true</param>
 		</page>
 
 		<page name="scaling" gui-text="Coordinate System and Transformations">

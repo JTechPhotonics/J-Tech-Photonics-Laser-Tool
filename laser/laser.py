@@ -63,10 +63,19 @@ class GcodeExtension(EffectExtension):
 
         header = None
         if os.path.isfile(self.options.header_path):
+            logger.debug(F"going to read{self.options.header_path}")
             with open(self.options.header_path, 'r') as header_file:
                 header = header_file.read().splitlines()
+                logger.debug(F"This is my header: >>>{header}<<<")
         elif self.options.header_path != os.getcwd():
             self.debug(f"Header file does not exist at {self.options.header_path}")
+
+        if self.options.set_z_axis_start_pos:
+            temp = F"G1 Z{self.options.z_axis_start};"
+            if header is None:
+                header = [temp]
+            else:
+                header.append(temp)
 
         footer = None
         if os.path.isfile(self.options.footer_path):
@@ -74,6 +83,13 @@ class GcodeExtension(EffectExtension):
                 footer = footer_file.read().splitlines()
         elif self.options.footer_path != os.getcwd():
             self.debug(f"Footer file does not exist at {self.options.footer_path}")
+
+        if self.options.move_to_zero_at_end:
+            temp = "G1 X0.0 Y0.0 Z0.0;"
+            if footer is None:
+                footer = [temp]
+            else:
+                footer.append(temp)
 
         # Generate gcode
         self.clear_debug()
