@@ -71,7 +71,10 @@ class GcodeExtension(EffectExtension):
             self.debug(f"Header file does not exist at {self.options.header_path}")
 
         if self.options.set_z_axis_start_pos:
-            temp = F"G1 Z{self.options.z_axis_start};"
+            unit = "G21"
+            if self.options.unit == "in":
+                unit = "G20"
+            temp = F"{unit};\nG1 Z{self.options.z_axis_start};"
             if header is None:
                 header = [temp]
             else:
