@@ -85,7 +85,7 @@ class GcodeExtension(EffectExtension):
             self.debug(f"Footer file does not exist at {self.options.footer_path}")
 
         if self.options.move_to_zero_at_end:
-            temp = "G1 X0.0 Y0.0 Z0.0;"
+            temp = F"M5;\nG1 F{self.options.travel_speed} X0.0 Y0.0 Z0.0;"
             if footer is None:
                 footer = [temp]
             else:
