@@ -65,7 +65,7 @@ class GcodeExtension(EffectExtension):
         if os.path.isfile(self.options.header_path):
             with open(self.options.header_path, 'r') as header_file:
                 header = header_file.read().splitlines()
-        elif self.options.header_path != os.getcwd():
+        elif self.options.header_path != os.getcwd():  # The Inkscape file selector defaults to the working directory
             self.debug(f"Header file does not exist at {self.options.header_path}")
 
         footer = None
