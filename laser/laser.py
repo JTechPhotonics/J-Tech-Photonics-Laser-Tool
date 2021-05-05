@@ -50,8 +50,10 @@ class GcodeExtension(EffectExtension):
 
         root = self.document.getroot()
 
-        approximation_tolerance = float(self.options.approximation_tolerance.replace(',', '.'))
+        # Change svg_to_gcode's approximation tolerance
+        TOLERANCES["approximation"] = float(self.options.approximation_tolerance.replace(',', '.'))
 
+        # Construct output path
         output_path = os.path.join(self.options.directory, self.options.filename)
         if self.options.filename_suffix:
             filename, extension = output_path.split('.')
@@ -61,27 +63,38 @@ class GcodeExtension(EffectExtension):
                 output_path = filename + str(n) + '.' + extension
                 n += 1
 
-        header = None
+        # Load header and footer files
+        header = []
         if os.path.isfile(self.options.header_path):
             with open(self.options.header_path, 'r') as header_file:
                 header = header_file.read().splitlines()
         elif self.options.header_path != os.getcwd():  # The Inkscape file selector defaults to the working directory
             self.debug(f"Header file does not exist at {self.options.header_path}")
 
-        footer = None
+        footer = []
         if os.path.isfile(self.options.footer_path):
             with open(self.options.footer_path, 'r') as footer_file:
                 footer = footer_file.read().splitlines()
         elif self.options.footer_path != os.getcwd():
             self.debug(f"Footer file does not exist at {self.options.footer_path}")
 
-        # Generate gcode
-        self.clear_debug()
-
-        TOLERANCES["approximation"] = approximation_tolerance
+        # Customize header/footer
         custom_interface = generate_custom_interface(self.options.laser_off_command, self.options.laser_power_command,
                                                      self.options.laser_power_range)
+        interface_instance = custom_interface()
 
+        if self.options.do_laser_off_start:
+            header.append(interface_instance.laser_off())
+        if self.options.do_laser_off_end:
+            footer.append(interface_instance.laser_off())
+
+        header.append(interface_instance.set_movement_speed(self.options.travel_speed))
+        if self.options.do_z_axis_start:
+            header.append(interface_instance.linear_move(z=self.options.z_axis_start))
+        if self.options.move_to_origin_end:
+            footer.append(interface_instance.linear_move(x=0, y=0))
+
+        # Generate gcode
         gcode_compiler = Compiler(custom_interface, self.options.travel_speed, self.options.cutting_speed,
                                   self.options.pass_depth, dwell_time=self.options.dwell_time, custom_header=header,
                                   custom_footer=footer, unit=self.options.unit)
@@ -100,7 +113,8 @@ class GcodeExtension(EffectExtension):
         gcode_compiler.append_curves(curves)
         gcode_compiler.compile_to_file(output_path, passes=self.options.passes)
 
-        # Generate debug lines
+        # Draw debug lines
+        self.clear_debug()
         if self.options.draw_debug:
             self.draw_debug_traces(curves)
             self.draw_unit_reference()
