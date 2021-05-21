@@ -23,13 +23,9 @@
 		</page>
 
 		<page name="advanced_settings" gui-text="Advanced Settings">
-			<param name="laser_power_command" type="string" _gui-text="Laser Power Command">M3</param>
-			<param name="laser_off_command" type="string" _gui-text="Laser Off Command">M5</param>
+			<param name="tool_power_command" type="string" _gui-text="Tool Power Command">M3 S255;</param>
+			<param name="tool_off_command" type="string" _gui-text="Tool Off Command">M5;</param>
 			<param name="dwell_time" type="float" _gui-text="Dwell Time Before Moving (ms)">0</param>
-			<param name="laser_power_range" type="enum" _gui-text="Laser Power Range">
-				<item value="255">0-255</item>
-				<item value="12000">0-12000</item>
-			</param>
 			<spacer></spacer>
 			<param name="draw_debug" type="boolean" _gui-text="Draw Debug">true</param>
 			<param name="debug_line_width" type="float" _gui-text="Debug Line Width (px)">0.5</param>

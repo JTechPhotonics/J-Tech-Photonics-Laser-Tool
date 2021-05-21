@@ -7,7 +7,6 @@ from inkex import EffectExtension, Boolean
 from svg_to_gcode.svg_parser import parse_root, Transformation, debug_methods
 from svg_to_gcode.geometry import LineSegmentChain
 from svg_to_gcode.compiler import Compiler, interfaces
-from svg_to_gcode.formulas import linear_map
 from svg_to_gcode import TOLERANCES
 
 svg_name_space = "http://www.w3.org/2000/svg"
@@ -17,7 +16,7 @@ sodipodi_name_space = "http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
 inx_filename = "laser.inx"
 
 
-def generate_custom_interface(laser_off_command, laser_power_command, laser_power_range):
+def generate_custom_interface(laser_off_command, laser_power_command):
     """Wrapper function for generating a Gcode interface with a custom laser power command"""
 
     class CustomInterface(interfaces.Gcode):
@@ -27,14 +26,10 @@ def generate_custom_interface(laser_off_command, laser_power_command, laser_powe
             super().__init__()
 
         def laser_off(self):
-            return f"{laser_off_command};"
+            return f"{laser_off_command}"
 
-        def set_laser_power(self, power):
-            if power < 0 or power > 1:
-                raise ValueError(f"{power} is out of bounds. Laser power must be given between 0 and 1. "
-                                 f"The interface will scale it correctly.")
-
-            return f"{laser_power_command} S{linear_map(0, int(laser_power_range), power)};"
+        def set_laser_power(self, _):
+            return f"{laser_power_command}"
 
     return CustomInterface
 
@@ -79,8 +74,7 @@ class GcodeExtension(EffectExtension):
             self.debug(f"Footer file does not exist at {self.options.footer_path}")
 
         # Customize header/footer
-        custom_interface = generate_custom_interface(self.options.laser_off_command, self.options.laser_power_command,
-                                                     self.options.laser_power_range)
+        custom_interface = generate_custom_interface(self.options.tool_off_command, self.options.tool_power_command)
         interface_instance = custom_interface()
 
         if self.options.do_laser_off_start:
