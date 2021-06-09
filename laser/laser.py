@@ -100,6 +100,8 @@ class GcodeExtension(EffectExtension):
 
         if self.options.machine_origin == "center":
             transformation.add_translation(-self.options.bed_width / 2, self.options.bed_height / 2)
+        elif self.options.machine_origin == "top-left":
+            transformation.add_translation(0, self.options.bed_height)
 
         curves = parse_root(root, transform_origin=not self.options.invert_y_axis, root_transformation=transformation,
                             canvas_height=self.options.bed_height)
