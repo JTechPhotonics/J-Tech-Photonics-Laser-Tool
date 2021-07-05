@@ -51,7 +51,11 @@ class GcodeExtension(EffectExtension):
         # Construct output path
         output_path = os.path.join(self.options.directory, self.options.filename)
         if self.options.filename_suffix:
-            filename, extension = output_path.split('.')
+            try:
+                filename, extension = output_path.split('.')
+            except:
+                self.msg("Error in output directory!")
+                exit(1)
 
             n = 1
             while os.path.isfile(output_path):
@@ -277,7 +281,7 @@ class GcodeExtension(EffectExtension):
             if arg_type in ["description", "notebook"]:
                 continue
 
-            types = {"int": int, "float": float, "boolean": Boolean, "string": str, "enum": str, "path": str}
+            types = {"int": int, "float": float, "boolean": Boolean, "string": str, "optiongroup": str, "path": str}
 
             arguments.append({"name": name, "type": types[arg_type]})
 
