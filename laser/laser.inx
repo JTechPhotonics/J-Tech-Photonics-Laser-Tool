@@ -16,14 +16,14 @@
             <spacer/>
             <param name="directory" type="path" gui-text="Output Directory" mode="folder">-- Choose Output Directory --</param>
             <param name="filename" type="string" gui-text="Filename">output.gcode</param>
-            <param name="filename_suffix" type="bool" gui-text="Add Numeric Suffix to Filename">true</param>
+            <param name="filename_suffix" type="boolean" gui-text="Add Numeric Suffix to Filename">true</param>
         </page>
         <page name="advanced_settings" gui-text="Advanced Settings">
             <param name="tool_power_command" type="string" gui-text="Tool Power Command">M3 S255;</param>
             <param name="tool_off_command" type="string" gui-text="Tool Off Command">M5;</param>
             <param name="dwell_time" type="float" gui-text="Dwell Time Before Moving (ms)">0</param>
             <spacer/>
-            <param name="draw_debug" type="bool" gui-text="Draw Debug">true</param>
+            <param name="draw_debug" type="boolean" gui-text="Draw Debug">true</param>
             <param name="debug_line_width" type="float" gui-text="Debug Line Width (px)">0.5</param>
             <param name="debug_arrow_scale" type="float" min="0" gui-text="Debug Arrow Scale">1.0</param>
             <spacer/>
@@ -34,13 +34,13 @@
             <param name="header_path" type="path" mode="file" gui-text="Custom G-code Header Filepath" />
             <param name="footer_path" type="path" mode="file" gui-text="Custom G-code Footer Filepath" />
             <spacer/>
-            <param name="do_z_axis_start" type="bool" gui-text="Set Z-Axis Start Position">false</param>
+            <param name="do_z_axis_start" type="boolean" gui-text="Set Z-Axis Start Position">false</param>
             <param name="z_axis_start" type="float" min="0" max="999999" gui-text="Absolute Z-Axis Start Position (unit)">0</param>
             <spacer/>
-            <param name="move_to_origin_end" type="bool" gui-text="Move To Origin When Done">false</param>
+            <param name="move_to_origin_end" type="boolean" gui-text="Move To Origin When Done">false</param>
             <spacer/>
-            <param name="do_laser_off_start" type="bool" gui-text="Turn Laser Off Before a Job">true</param>
-            <param name="do_laser_off_end" type="bool" gui-text="Turn Laser Off After a Job">true</param>
+            <param name="do_laser_off_start" type="boolean" gui-text="Turn Laser Off Before a Job">true</param>
+            <param name="do_laser_off_end" type="boolean" gui-text="Turn Laser Off After a Job">true</param>
         </page>
         <page name="scaling" gui-text="Coordinate System and Transformations">
             <param name="machine_origin" type="optiongroup" appearance="combo" gui-text="Machine Origin">
@@ -48,7 +48,7 @@
                 <option value="center">center</option>
                 <option value="top-left">top-left</option>
             </param>
-            <param name="invert_y_axis" type="bool" gui-text="Invert Y-Axis">false</param>
+            <param name="invert_y_axis" type="boolean" gui-text="Invert Y-Axis">false</param>
             <param name="bed_width" type="float" min="0" max="999999" gui-text="Bed X Width (unit)">200</param>
             <param name="bed_height" type="float" min="0" max="999999" gui-text="Bed Y Length (unit)">200</param>
             <spacer/>
