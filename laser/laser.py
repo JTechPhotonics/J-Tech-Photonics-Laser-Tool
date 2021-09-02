@@ -281,7 +281,7 @@ class GcodeExtension(EffectExtension):
             if arg_type in ["description", "notebook"]:
                 continue
 
-            types = {"int": int, "float": float, "boolean": Boolean, "string": str, "optiongroup": str, "path": str}
+            types = {"int": int, "float": float, "bool": Boolean, "string": str, "optiongroup": str, "path": str}
 
             arguments.append({"name": name, "type": types[arg_type]})
 
