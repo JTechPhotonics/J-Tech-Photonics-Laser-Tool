@@ -60,9 +60,7 @@
     <effect>
         <object-type>path</object-type>
         <effects-menu>
-            <submenu name="FabLab Chemnitz">
-                <submenu name="Import/Export/Transfer"/>
-            </submenu>
+            <submenu name="Generate Laser Gcode"/>
         </effects-menu>
     </effect>
     <script>
