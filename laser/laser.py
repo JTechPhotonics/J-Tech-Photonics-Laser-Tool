@@ -49,7 +49,14 @@ class GcodeExtension(EffectExtension):
         TOLERANCES["approximation"] = float(self.options.approximation_tolerance.replace(',', '.'))
 
         # Construct output path
-        output_path = os.path.join(self.options.directory, self.options.filename)
+        # Construct output path
+        if self.options.filename_dynamic and self.document_path():
+            filename, extension = self.document_path().split('.')
+            filename = filename.split('/')[-1] + '.gcode'
+            output_path = os.path.join(self.options.directory, filename)
+        else:
+            output_path = os.path.join(self.options.directory, self.options.filename)
+
         if self.options.filename_suffix:
             try:
                 filename, extension = output_path.split('.')
