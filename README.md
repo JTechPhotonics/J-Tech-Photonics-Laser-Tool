@@ -33,8 +33,10 @@ Lastly, you can move and rescale your drawing to make it look like it did before
 
 ### Basic Usage
 
-This extension will parse all svg paths and ignore everything else. So step 1 is to convert all other shapes to paths.
-In this case I want to convert the whole drawing to gcode. So I select everything `ctr+A` and convert the drawing to paths 
+This extension will parse all svg paths and ignore everything else. 
+
+**Step 1 is to convert all other shapes to paths.** In this case I want to convert the whole drawing to gcode.
+So I select everything `ctr+A` and convert the drawing to paths 
 **Path** > **Object to Path**.
 
 Open the extension at **Extension** > **Generate Laser Gcode** > **J Tech Community Laser Tool**
