@@ -71,18 +71,20 @@ class GcodeExtension(EffectExtension):
 
         # Load header and footer files
         header = []
-        if self.options.header_path is not None and os.path.isfile(self.options.header_path):
-            with open(self.options.header_path, 'r') as header_file:
-                header = header_file.read().splitlines()
-        elif self.options.header_path != os.getcwd():  # The Inkscape file selector defaults to the working directory
-            self.debug(f"Header file does not exist at {self.options.header_path}")
+        if self.options.header_path is not None:
+            if os.path.isfile(self.options.header_path):
+                with open(self.options.header_path, 'r') as header_file:
+                    header = header_file.read().splitlines()
+            elif self.options.header_path != os.getcwd():  # The Inkscape file selector defaults to the working directory
+                self.debug(f"Header file does not exist at {self.options.header_path}")
 
         footer = []
-        if self.options.footer_path is not None and os.path.isfile(self.options.footer_path):
-            with open(self.options.footer_path, 'r') as footer_file:
-                footer = footer_file.read().splitlines()
-        elif self.options.footer_path != os.getcwd():
-            self.debug(f"Footer file does not exist at {self.options.footer_path}")
+        if self.options.footer_path is not None:
+            if os.path.isfile(self.options.footer_path):
+                with open(self.options.footer_path, 'r') as footer_file:
+                    footer = footer_file.read().splitlines()
+            elif self.options.footer_path != os.getcwd():
+                self.debug(f"Footer file does not exist at {self.options.footer_path}")
 
         # Customize header/footer
         custom_interface = generate_custom_interface(self.options.tool_off_command, self.options.tool_power_command)
