@@ -1,4 +1,4 @@
-# J Tech Photonics Laser Tool
+# J Tech Photonics Laser Tool (Community version)
 This Inkscape extension generates gcode for laser cutters and plotting machines from an SVG file.
 
 Version 2.0 just released and there are a lot of changes! If you want you can still access legacy releases (below 2.0) 
@@ -46,9 +46,9 @@ hit apply.
 
 <img src="./images/important_settings.png" alt="important_settings.png" width="600" />
 
-You'll notice two layers where added to your document:
+You'll notice two layers were added to your document:
 * `debug reference points` contains the black corners. They 
-represent the four corners of your machine's bed. You can use them to eyeball weather the gcode is scaled and place 
+represent the four corners of your machine's bed. You can use them to eyeball whether the gcode is scaled and placed 
 correctly.
 * `debug traces` contains the red paths which trace all generated gcode commands.
 
@@ -59,6 +59,5 @@ or they will be deleted.
 
 * As a user you can contribute by suggesting features, testing the library and reporting any bugs you encounter in a 
 detailed issue.
-* As a developer of any skill level you can make pull requests which close issues or introdce usefull features. 
-Just make sure to create an issue describimg what features you want to add before taking the time to implement them. 
-Working on something just to not have it introduced sucks.
+* As a developer of any skill level you can make pull requests which close issues or introduce useful features. 
+Just make sure to create an issue describing what features you want to add before taking the time to implement them.
