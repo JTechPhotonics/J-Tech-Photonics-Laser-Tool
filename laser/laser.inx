@@ -16,7 +16,6 @@
             <spacer/>
             <param name="directory" type="path" gui-text="Output Directory" mode="folder">-- Choose Output Directory --</param>
             <param name="filename" type="string" gui-text="Filename">output.gcode</param>
-            <param name="filename_dynamic" type="bool" gui-text="Reuse SVG filename for output">false</param>
             <param name="filename_suffix" type="bool" gui-text="Add Numeric Suffix to Filename">true</param>
         </page>
         <page name="advanced_settings" gui-text="Advanced Settings">
