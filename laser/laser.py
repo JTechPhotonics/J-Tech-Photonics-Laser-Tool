@@ -48,15 +48,24 @@ class GcodeExtension(EffectExtension):
         # Change svg_to_gcode's approximation tolerance
         TOLERANCES["approximation"] = float(self.options.approximation_tolerance.replace(',', '.'))
 
+        try:
+            assert os.path.isdir(self.options.directory)
+        except:
+            self.debug(f"{self.options.directory} is not a directory")
+            exit(2)
+
         # Construct output path
         if self.options.filename:
-            output_path = os.path.join(self.options.directory, self.options.filename)
-            if '.' not in output_path:
-                output_path += ".gcode"
-        else:
+            filename = self.options.filename
+            if '.' not in filename:
+                filename += ".gcode"
+        elif self.document_path():
             filename, extension = self.document_path().split('.')
             filename = filename.split('/')[-1] + '.gcode'
-            output_path = os.path.join(self.options.directory, filename)
+        else:
+            filename = "untitled.gcode"
+
+        output_path = os.path.join(self.options.directory, filename)
 
         if self.options.filename_suffix:
             filename, extension = output_path.split('.')
@@ -74,6 +83,7 @@ class GcodeExtension(EffectExtension):
                     header = header_file.read().splitlines()
             elif self.options.header_path != os.getcwd():  # The Inkscape file selector defaults to the working directory
                 self.debug(f"Header file does not exist at {self.options.header_path}")
+                exit(2)
 
         footer = []
         if self.options.footer_path is not None:
@@ -82,6 +92,7 @@ class GcodeExtension(EffectExtension):
                     footer = footer_file.read().splitlines()
             elif self.options.footer_path != os.getcwd():
                 self.debug(f"Footer file does not exist at {self.options.footer_path}")
+                exit(2)
 
         # Customize header/footer
         custom_interface = generate_custom_interface(self.options.tool_off_command, self.options.tool_power_command)
@@ -156,10 +167,9 @@ class GcodeExtension(EffectExtension):
             if origin == "center":
                 change_origin.add_translation(bed_width / 2, bed_height / 2)
 
-
-
             path_string = xml_tree.tostring(
-                debug_methods.to_svg_path(approximation, color="red", opacity="0.5", stroke_width=f"{self.options.debug_line_width}px",
+                debug_methods.to_svg_path(approximation, color="red", opacity="0.5",
+                                          stroke_width=f"{self.options.debug_line_width}px",
                                           transformation=change_origin, draw_arrows=True)
             )
 
