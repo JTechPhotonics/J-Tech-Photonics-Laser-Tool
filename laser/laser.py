@@ -124,6 +124,7 @@ class GcodeExtension(EffectExtension):
         elif self.options.machine_origin == "top-left":
             transformation.add_translation(0, self.options.bed_height)
 
+        self.clear_debug()
         curves = parse_root(root, transform_origin=not self.options.invert_y_axis, root_transformation=transformation,
                             canvas_height=self.options.bed_height)
 
@@ -131,7 +132,6 @@ class GcodeExtension(EffectExtension):
         gcode_compiler.compile_to_file(output_path, passes=self.options.passes)
 
         # Draw debug lines
-        self.clear_debug()
         if self.options.draw_debug:
             self.draw_debug_traces(curves)
             self.draw_unit_reference()
