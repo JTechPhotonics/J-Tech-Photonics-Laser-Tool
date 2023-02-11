@@ -26,10 +26,20 @@ def generate_custom_interface(laser_off_command, laser_power_command):
             super().__init__()
 
         def laser_off(self):
-            return f"{laser_off_command}"
+            """ add line return if semicolumn
+            ex: M3 S3000;G4 P0.5;
+                will result:
+                M3 S3000;
+                G4 P0.5;
+            """
+            command = f"{laser_off_command}"
+            command = command.replace(';', ';\n')
+            return f"{command}"
 
         def set_laser_power(self, _):
-            return f"{laser_power_command}"
+            command = f"{laser_power_command}"
+            command = command.replace(';', ';\n')
+            return f"{command}"
 
     return CustomInterface
 
