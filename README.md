@@ -14,7 +14,7 @@ If you're interested in peeking under the hood, check out svg_to_gcode.
 Download the latest release [here](https://github.com/JTechPhotonics/J-Tech-Photonics-Laser-Tool/releases/latest).
 Inkscape versions below 1.0 are not supported. Use legacy releases if you are using Inkscape < 1.0.
 
-Unzip the binaries and copy the laser directly into the Inkscape **user extensions folder**. Inkscape lists the location
+Unzip `laser.zip` and copy the `laser` directly into the Inkscape **user extensions folder**. Inkscape lists the location
 of your user extensions folder under **Edit/Inkscape** > **Preferences** > **System**.
 
 Restart Inkscape and you're done.
