@@ -101,7 +101,7 @@ class GcodeExtension(EffectExtension):
         if self.options.do_laser_off_start:
             header.append(interface_instance.laser_off())
         if self.options.do_laser_off_end:
-            footer.append(interface_instance.laser_off())
+            footer.insert(0, interface_instance.laser_off())
 
         header.append(interface_instance.set_movement_speed(self.options.travel_speed))
         if self.options.do_z_axis_start:
