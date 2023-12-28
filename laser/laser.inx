@@ -22,6 +22,8 @@
             <param name="tool_power_command" type="string" gui-text="Tool Power Command">M3 S255;</param>
             <param name="tool_off_command" type="string" gui-text="Tool Off Command">M5;</param>
             <param name="dwell_time" type="float" gui-text="Dwell Time Before Moving (ms)">0</param>
+            <param name="dwell_time_for_grbl" gui-text="Adjust Dwell Time for grbl (s vs ms)" type="bool">true</param>
+            <param name="dwell_before_cut" gui-text="Apply Dwell Time before cut (not after)" type="bool">true</param>
             <spacer/>
             <param name="draw_debug" type="bool" gui-text="Draw Debug">true</param>
             <param name="debug_line_width" type="float" gui-text="Debug Line Width (px)">0.5</param>
