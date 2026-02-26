@@ -26,10 +26,10 @@ def generate_custom_interface(laser_off_command, laser_power_command):
             super().__init__()
 
         def laser_off(self):
-            return f"{laser_off_command}"
+            return laser_off_command.replace(r'\n', '\n')
 
         def set_laser_power(self, _):
-            return f"{laser_power_command}"
+            return laser_power_command.replace(r'\n', '\n')
 
     return CustomInterface
 
