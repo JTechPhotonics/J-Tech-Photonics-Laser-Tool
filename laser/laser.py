@@ -110,9 +110,12 @@ class GcodeExtension(EffectExtension):
             footer.append(interface_instance.linear_move(x=0, y=0))
 
         # Generate gcode
+        corrected_dwell_time = self.options.dwell_time
+        if self.options.dwell_time_for_grbl:
+            corrected_dwell_time = self.options.dwell_time/1000
         gcode_compiler = Compiler(custom_interface, self.options.travel_speed, self.options.cutting_speed,
-                                  self.options.pass_depth, dwell_time=self.options.dwell_time, custom_header=header,
-                                  custom_footer=footer, unit=self.options.unit)
+                                  self.options.pass_depth, dwell_time=corrected_dwell_time, custom_header=header,
+                                  custom_footer=footer, unit=self.options.unit, dwell_before_cut=self.options.dwell_before_cut)
 
         transformation = Transformation()
 
